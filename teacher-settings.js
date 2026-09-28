@@ -1,0 +1,1 @@
+async function load(){const r=await fetch("/api/me",{credentials:"include"});const x=await r.json();if(!x.loggedIn||x.user?.role!=="teacher"){location.href="/loginPrem.html";return;}document.querySelectorAll("[data-user-name]").forEach(e=>e.textContent=x.user.fullname||"Teacher");}document.addEventListener("DOMContentLoaded",load);

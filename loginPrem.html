@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Welcome Back</title>
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="loginPrem.css">
+
+</head>
+
+
+<body>
+
+
+    <!-- BACKGROUND -->
+
+    <div class="background"></div>
+
+    <div class="background-overlay"></div>
+
+
+    <!-- MAIN CONTAINER -->
+
+    <div class="page-container">
+
+
+        <!-- MAIN GLASS CARD -->
+
+        <div class="form-container">
+
+
+            <!-- ================= LEFT WELCOME PANEL ================= -->
+
+            <div class="welcome-panel">
+
+
+                <!-- BRAND -->
+
+                <div class="brand">
+
+                    <div class="brand-icon">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+
+                    <div>
+
+                        <h2>
+                            Exam<span>Secure</span>
+                        </h2>
+
+                        <p>
+                            Online Examination Platform
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- WELCOME CONTENT -->
+
+                <div class="welcome-content">
+
+
+                    <div class="small-label">
+
+                        <span></span>
+
+                        <p>
+                            SECURE EXAMINATION EXPERIENCE
+                        </p>
+
+                    </div>
+
+
+                    <h1>
+
+                        Smarter
+                        <span>Exams.</span>
+
+                        <br>
+
+                        Better
+                        <span>Results.</span>
+
+                    </h1>
+
+
+                    <p class="welcome-description">
+
+                        Experience a secure and modern online
+                        examination platform designed for students
+                        and teachers. Manage exams, monitor
+                        performance, and access results easily.
+
+                    </p>
+
+
+                    <!-- FEATURES -->
+
+                    <div class="feature-list">
+
+
+                        <div class="feature-item">
+
+                            <div class="feature-icon">
+
+                                <i class="fa-solid fa-shield-halved"></i>
+
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    Secure Examinations
+                                </h3>
+
+                                <p>
+                                    Safe and protected online exam environment.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="feature-item">
+
+                            <div class="feature-icon">
+
+                                <i class="fa-solid fa-chart-line"></i>
+
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    Real-Time Results
+                                </h3>
+
+                                <p>
+                                    View exam performance and results easily.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="feature-item">
+
+                            <div class="feature-icon">
+
+                                <i class="fa-solid fa-user-graduate"></i>
+
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    Student & Teacher Portal
+                                </h3>
+
+                                <p>
+                                    Simple tools for both students and teachers.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- LEFT FOOTER -->
+
+                <div class="welcome-footer">
+
+
+                    <div class="mini-stat">
+
+                        <strong>
+                            Secure
+                        </strong>
+
+                        <span>
+                            Exam Environment
+                        </span>
+
+                    </div>
+
+
+                    <div class="stat-line"></div>
+
+
+                    <div class="mini-stat">
+
+                        <strong>
+                            Smart
+                        </strong>
+
+                        <span>
+                            Exam Management
+                        </span>
+
+                    </div>
+
+
+                    <div class="stat-line"></div>
+
+
+                    <div class="mini-stat">
+
+                        <strong>
+                            Easy
+                        </strong>
+
+                        <span>
+                            Results Access
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ================= RIGHT LOGIN PANEL ================= -->
+
+            <div class="login-panel">
+
+
+                <!-- ================= LOGIN FORM ================= -->
+
+                <div id="login-box">
+
+
+                    <!-- HEADING -->
+
+                    <div class="form-heading">
+
+                        <h1>
+                            Welcome
+                            <span>Back</span>
+                        </h1>
+
+                        <p>
+                            Sign in to continue your journey
+                        </p>
+
+                    </div>
+
+
+                    <!-- ================= ROLE SELECTOR ================= -->
+
+                    <div class="login-role-selector">
+
+
+                        <button
+                            type="button"
+                            class="login-role-btn active"
+                            id="studentRoleBtn"
+                            onclick="setLoginRole('student')"
+                        >
+
+                            <span class="role-btn-icon">
+
+                                <i class="fa-solid fa-user-graduate"></i>
+
+                            </span>
+
+                            <span>
+                                Student
+                            </span>
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="login-role-btn"
+                            id="teacherRoleBtn"
+                            onclick="setLoginRole('teacher')"
+                        >
+
+                            <span class="role-btn-icon">
+
+                                <i class="fa-solid fa-chalkboard-user"></i>
+
+                            </span>
+
+                            <span>
+                                Teacher
+                            </span>
+
+                        </button>
+
+
+                    </div>
+
+
+                    <!-- LOGIN MESSAGE -->
+
+                    <p
+                        class="message"
+                        id="login-message">
+                    </p>
+
+
+                    <!-- USERNAME -->
+
+                    <div class="input-group">
+
+
+                        <div class="icon-box">
+
+                            <i class="fa-solid fa-user"></i>
+
+                        </div>
+
+
+                        <input
+                            type="text"
+                            id="username"
+                            placeholder="Username"
+                            autocomplete="username">
+
+
+                    </div>
+
+
+                    <!-- PASSWORD -->
+
+                    <div class="input-group">
+
+
+                        <div class="icon-box">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                        </div>
+
+
+                        <input
+                            type="password"
+                            id="password"
+                            placeholder="Password"
+                            autocomplete="current-password">
+
+
+                        <i
+                            class="fa-solid fa-eye password-toggle"
+                            onclick="togglePassword('password', this)">
+                        </i>
+
+
+                    </div>
+
+
+                    <!-- OPTIONS -->
+
+                    <div class="options">
+
+
+                        <label class="remember-label">
+
+
+                            <input
+                                type="checkbox"
+                                id="remember">
+
+
+                            <span class="custom-checkbox">
+
+                                <i class="fa-solid fa-check"></i>
+
+                            </span>
+
+
+                            <span>
+                                Remember me
+                            </span>
+
+
+                        </label>
+
+
+                        <button
+                            type="button"
+                            class="forgot-button"
+                            onclick="forgotPassword()">
+
+                            Forgot Password?
+
+                        </button>
+
+
+                    </div>
+
+
+                    <!-- LOGIN BUTTON -->
+
+                    <button
+                        type="button"
+                        class="main-button"
+                        onclick="login()">
+
+                        <i class="fa-solid fa-right-to-bracket"></i>
+
+                        Login
+
+                    </button>
+
+
+                    <!-- DIVIDER -->
+
+                    <div class="divider">
+
+
+                        <span></span>
+
+
+                        <p>
+                            OR
+                        </p>
+
+
+                        <span></span>
+
+
+                    </div>
+
+
+                    <!-- GOOGLE LOGIN -->
+
+                    <button
+                        type="button"
+                        class="google-button"
+                        onclick="googleLogin()">
+
+                        <i class="fa-brands fa-google"></i>
+
+                        Continue with Google
+
+                    </button>
+
+
+                    <!-- FACEBOOK LOGIN -->
+
+                    <button
+                        type="button"
+                        class="facebook-button"
+                        onclick="facebookLogin()">
+
+                        <i class="fa-brands fa-facebook-f"></i>
+
+                        Continue with Facebook
+
+                    </button>
+
+
+                    <!-- SIGN UP -->
+
+                    <div class="footer">
+
+
+                        <span>
+                            Don't have an account?
+                        </span>
+
+
+                        <button
+                            type="button"
+                            onclick="toggleForm('signup')">
+
+                            Sign Up
+
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- ================= SIGNUP FORM ================= -->
+
+                <div
+                    id="signup-box"
+                    class="hidden">
+
+
+                    <!-- SIGNUP HEADING -->
+
+                    <div class="form-heading">
+
+                        <h1>
+                            Create
+                            <span>Account</span>
+                        </h1>
+
+                        <p>
+                            Join us and start your journey
+                        </p>
+
+                    </div>
+
+
+                    <!-- SIGNUP MESSAGE -->
+
+                    <p
+                        class="message"
+                        id="signup-message">
+                    </p>
+
+
+                    <!-- FULL NAME -->
+
+                    <div class="input-group">
+
+
+                        <div class="icon-box">
+
+                            <i class="fa-solid fa-user"></i>
+
+                        </div>
+
+
+                        <input
+                            type="text"
+                            id="fullname"
+                            placeholder="Full Name">
+
+
+                    </div>
+
+
+                    <!-- EMAIL -->
+
+                    <div class="input-group">
+
+
+                        <div class="icon-box">
+
+                            <i class="fa-solid fa-envelope"></i>
+
+                        </div>
+
+
+                        <input
+                            type="email"
+                            id="email"
+                            placeholder="Email Address">
+
+
+                    </div>
+
+
+                    <!-- USERNAME -->
+
+                    <div class="input-group">
+
+
+                        <div class="icon-box">
+
+                            <i class="fa-solid fa-at"></i>
+
+                        </div>
+
+
+                        <input
+                            type="text"
+                            id="new-username"
+                            placeholder="Username">
+
+
+                    </div>
+
+
+                    <!-- PASSWORD -->
+
+                    <div class="input-group">
+
+
+                        <div class="icon-box">
+
+                            <i class="fa-solid fa-lock"></i>
+
+                        </div>
+
+
+                        <input
+                            type="password"
+                            id="new-password"
+                            placeholder="Password">
+
+
+                        <i
+                            class="fa-solid fa-eye password-toggle"
+                            onclick="togglePassword('new-password', this)">
+                        </i>
+
+
+                    </div>
+
+
+                    <!-- CONFIRM PASSWORD -->
+
+                    <div class="input-group">
+
+
+                        <div class="icon-box">
+
+                            <i class="fa-solid fa-shield-halved"></i>
+
+                        </div>
+
+
+                        <input
+                            type="password"
+                            id="confirm-password"
+                            placeholder="Confirm Password">
+
+
+                        <i
+                            class="fa-solid fa-eye password-toggle"
+                            onclick="togglePassword('confirm-password', this)">
+                        </i>
+
+
+                    </div>
+
+
+                    <!-- SIGNUP BUTTON -->
+
+                    <button
+                        type="button"
+                        class="main-button"
+                        onclick="register()">
+
+                        <i class="fa-solid fa-user-plus"></i>
+
+                        Create Account
+
+                    </button>
+
+
+                    <!-- BACK TO LOGIN -->
+
+                    <div class="footer">
+
+
+                        <span>
+                            Already have an account?
+                        </span>
+
+
+                        <button
+                            type="button"
+                            onclick="toggleForm('login')">
+
+                            Login
+
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- SECURITY TEXT -->
+
+        <div class="security-text">
+
+
+            <i class="fa-solid fa-shield-halved"></i>
+
+
+            Your data is safe and secure
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script src="loginPrem.js"></script>
+
+
+    <!-- ROLE SELECTION -->
+
+    <script>
+
+
+        function setLoginRole(role) {
+
+
+            sessionStorage.setItem(
+                "selectedRole",
+                role
+            );
+
+
+            const studentButton =
+                document.getElementById(
+                    "studentRoleBtn"
+                );
+
+
+            const teacherButton =
+                document.getElementById(
+                    "teacherRoleBtn"
+                );
+
+
+            studentButton.classList.remove(
+                "active"
+            );
+
+
+            teacherButton.classList.remove(
+                "active"
+            );
+
+
+            if (role === "teacher") {
+
+
+                teacherButton.classList.add(
+                    "active"
+                );
+
+
+            } else {
+
+
+                studentButton.classList.add(
+                    "active"
+                );
+
+
+            }
+
+
+        }
+
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+
+                let selectedRole =
+                    sessionStorage.getItem(
+                        "selectedRole"
+                    );
+
+
+                if (
+                    selectedRole !== "student" &&
+                    selectedRole !== "teacher"
+                ) {
+
+
+                    selectedRole = "student";
+
+
+                    sessionStorage.setItem(
+                        "selectedRole",
+                        "student"
+                    );
+
+
+                }
+
+
+                setLoginRole(
+                    selectedRole
+                );
+
+
+            }
+        );
+
+
+    </script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        ExamSecure | Live Monitoring
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="live-monitor.css"
+    >
+
+</head>
+
+
+<body>
+
+    <header class="monitor-topbar">
+
+        <div>
+
+            <div class="monitor-brand">
+                <div class="monitor-brand-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+
+                <strong>
+                    Exam<span>Secure</span>
+                </strong>
+            </div>
+
+            <div class="monitor-title">
+
+                <span>
+                    LIVE EXAM MONITORING
+                </span>
+
+                <h1 id="examName">
+                    Loading...
+                </h1>
+
+                <p id="examSchedule">
+                    Loading exam session...
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="monitor-actions">
+
+            <div
+                id="liveIndicator"
+                class="live-indicator"
+            >
+                <span></span>
+                LIVE
+            </div>
+
+            <button
+                type="button"
+                onclick="window.location.href='/teacher-dashboard.html'"
+            >
+                <i class="fa-solid fa-arrow-left"></i>
+                Dashboard
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <main class="monitor-page">
+
+        <section class="summary-grid">
+
+            <div class="summary-card">
+
+                <span>
+                    Expected
+                </span>
+
+                <strong id="expectedCount">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <span>
+                    Joined
+                </span>
+
+                <strong id="joinedCount">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <span>
+                    Writing
+                </span>
+
+                <strong id="activeCount">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="summary-card">
+
+                <span>
+                    Submitted
+                </span>
+
+                <strong id="submittedCount">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="summary-card alert-card">
+
+                <span>
+                    Alerts
+                </span>
+
+                <strong id="alertCount">
+                    0
+                </strong>
+
+            </div>
+
+        </section>
+
+
+        <section class="monitor-layout">
+
+
+            <div class="students-panel">
+
+                <div class="panel-heading">
+
+                    <div>
+
+                        <span>
+                            LIVE STUDENTS
+                        </span>
+
+                        <h2>
+                            Student Cameras
+                        </h2>
+
+                    </div>
+
+                    <button
+                        id="refreshMonitor"
+                        type="button"
+                    >
+                        <i class="fa-solid fa-rotate"></i>
+                        Refresh
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="studentsGrid"
+                    class="students-grid"
+                >
+                </div>
+
+            </div>
+
+
+            <aside class="alerts-panel">
+
+                <div class="panel-heading">
+
+                    <div>
+
+                        <span>
+                            PROCTORING
+                        </span>
+
+                        <h2>
+                            Recent Alerts
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="alertsList"
+                    class="alerts-list"
+                >
+                </div>
+
+
+                <div
+                    id="selectedStudent"
+                    class="selected-student"
+                >
+
+                    <span>
+                        SELECTED STUDENT
+                    </span>
+
+                    <h3>
+                        Select a student
+                    </h3>
+
+                    <p>
+                        Click a student card to inspect
+                        their live status.
+                    </p>
+
+                </div>
+
+            </aside>
+
+        </section>
+
+    </main>
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="live-monitor.js"></script>
+
+</body>
+
+</html>

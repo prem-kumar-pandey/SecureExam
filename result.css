@@ -1,0 +1,190 @@
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;font-family:Inter,"Segoe UI",Arial,sans-serif;background:#fff;color:#17213f}
+.result-topbar{min-height:72px;padding:0 28px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(145deg,#192b55,#101a34);color:#fff}
+.result-brand{display:flex;align-items:center;gap:11px}
+.result-brand strong{font-size:20px}
+.result-brand strong span{color:#8b78ff}
+.brand-icon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,#8168f5,#5747d6)}
+.result-topbar button,.result-actions button{border:0;border-radius:11px;padding:11px 15px;background:#fff;color:#263252;cursor:pointer;font-weight:800}
+.result-page{width:min(720px,calc(100% - 32px));margin:50px auto}
+.result-card{padding:36px;border:1px solid #e3e7ef;border-radius:24px;background:linear-gradient(145deg,#fff,#f7f8fc);box-shadow:0 18px 50px rgba(25,34,64,.08);text-align:center}
+.result-icon{width:70px;height:70px;border-radius:22px;margin:0 auto 15px;display:grid;place-items:center;background:#eaf8f0;color:#168252;font-size:30px}
+.eyebrow{font-size:10px;font-weight:800;letter-spacing:.1em;color:#7061e8}
+.result-card h1{font-size:30px;margin:7px 0}
+.result-card>p{color:#6b758c}
+.score-main{margin:28px 0;padding:24px;border-radius:18px;background:#192b55;color:#fff}
+.score-main strong{display:block;font-size:52px}
+.score-main span{color:#aebbd8;font-size:12px}
+.result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.result-grid div{padding:16px;border-radius:14px;background:#fff;border:1px solid #e5e8ef}
+.result-grid span{display:block;color:#7a8499;font-size:11px;margin-bottom:7px}
+.result-grid strong{color:#1b2541;font-size:16px}
+.auto-note{margin-top:16px;color:#9b6500!important;font-size:12px}
+.result-actions{margin-top:22px}
+@media(max-width:650px){.result-grid{grid-template-columns:1fr 1fr}.result-card{padding:24px}.result-topbar{padding:0 16px}}
+
+/* =========================================================
+   FINAL CLEAN LIGHT RESULT UI
+========================================================= */
+body {
+    background: #f5f7fb !important;
+    color: #17213f !important;
+}
+
+.result-card,
+.result-grid div {
+    background: #ffffff !important;
+    color: #17213f !important;
+    border-color: #e3e7ef !important;
+    box-shadow: 0 14px 35px rgba(25,34,64,.07) !important;
+}
+
+.result-card h1,
+.result-card h2,
+.result-card h3,
+.result-grid strong,
+.result-grid span {
+    color: #17213f !important;
+}
+
+.result-actions button,
+.result-topbar button {
+    background: #ffffff !important;
+    color: #3f4a70 !important;
+    border: 1px solid #dfe4ee !important;
+    box-shadow: 0 6px 16px rgba(25,34,64,.06) !important;
+}
+
+.result-actions button:hover,
+.result-topbar button:hover {
+    background: #ffffff !important;
+    color: #5747d6 !important;
+    border-color: #cfc9f7 !important;
+}
+
+
+/* FINAL WHITE SURFACE PASS */
+html, body { background: #ffffff !important; }
+body { color: #17213f !important; }
+button, .result-actions button, .result-topbar button { background: #ffffff !important; }
+
+/* ===== ExamSecure Professional Reference Theme ===== */
+body{background:linear-gradient(135deg,#f6f7ff 0%,#eef1fa 55%,#f8f6ff 100%) !important;color:#17213f!important;}
+.result-topbar{background:linear-gradient(145deg,#18284f,#101a34)!important;}
+.result-brand strong{color:#fff!important}.result-brand strong span{color:#9a8cff!important;}
+.result-card,.result-grid div{background:#fff!important;border-color:#e2e6ef!important;box-shadow:0 12px 35px rgba(34,45,82,.07)!important;}
+.result-card h1,.result-card h2,.result-card h3,.result-grid strong{color:#17213f!important;}
+.result-card>p,.result-grid span{color:#71809d!important;}
+.result-topbar button,.result-actions button{background:#fff!important;color:#263252!important;border:1px solid #dfe4ee!important;box-shadow:0 5px 16px rgba(37,49,90,.05)!important;}
+.result-topbar button:hover,.result-actions button:hover{background:#fafaff!important;border-color:#c9c2ff!important;}
+
+/* ===== FINAL SOFT REFERENCE BACKGROUND ===== */
+html,body{background:linear-gradient(135deg,#f7f8ff 0%,#eef1ff 50%,#f8f5ff 100%) !important;}
+
+/* FINAL SPATIAL UI BACKGROUND */
+body {
+    background:
+        radial-gradient(circle at 10% 0%, rgba(124, 92, 246, 0.10), transparent 28%),
+        radial-gradient(circle at 92% 8%, rgba(72, 112, 220, 0.10), transparent 30%),
+        linear-gradient(135deg, #F7F8FF 0%, #EEF2FF 52%, #F8F7FF 100%) !important;
+    color: #17233F;
+}
+
+/* SPATIAL UI DEPTH — preserves existing layout and palette */
+.main {
+    position: relative;
+    isolation: isolate;
+}
+
+.main::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background:
+        radial-gradient(circle at 75% 18%, rgba(120, 94, 240, 0.05), transparent 24%),
+        radial-gradient(circle at 20% 80%, rgba(80, 120, 220, 0.045), transparent 25%);
+}
+
+.sidebar {
+    box-shadow: 8px 0 28px rgba(37, 51, 88, 0.08);
+    overflow: hidden;
+}
+
+.sidebar-nav {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    min-height: 0;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(91, 82, 220, 0.35) transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+    width: 6px;
+}
+.sidebar-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: rgba(91, 82, 220, 0.30);
+    border-radius: 20px;
+}
+
+.stat-card,
+.exam-card,
+.panel,
+.upcoming-banner,
+.result-card,
+.exam-container,
+.question-card,
+.login-card,
+.auth-card,
+.form-card,
+.table-card {
+    box-shadow:
+        0 10px 30px rgba(37, 51, 88, 0.07),
+        0 2px 8px rgba(37, 51, 88, 0.035);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.stat-card:hover,
+.exam-card:hover,
+.panel:hover,
+.result-card:hover,
+.question-card:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 18px 38px rgba(37, 51, 88, 0.10),
+        0 4px 12px rgba(37, 51, 88, 0.045);
+}
+
+.nav-item,
+button,
+.start-btn,
+.action-btn,
+.view-all,
+.result-btn {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+button:hover,
+.start-btn:hover,
+.action-btn:hover,
+.result-btn:hover {
+    transform: translateY(-1px);
+}
+
+input,
+select,
+textarea {
+    box-shadow: inset 0 1px 2px rgba(37, 51, 88, 0.025);
+}
+
+/* Final spatial result theme */
+:root { --sp-text:#1d2942;--sp-muted:#68758b;--sp-primary:#5b57d9; }
+html,body { background:#e9edf4 !important;color:var(--sp-text) !important; }
+body { background:radial-gradient(900px 520px at 8% 0%,rgba(132,121,236,.17),transparent 62%),radial-gradient(800px 520px at 94% 12%,rgba(106,154,224,.16),transparent 60%),linear-gradient(135deg,#eef1f6 0%,#e8edf5 48%,#f1eff8 100%) !important; }
+.result-topbar { background:rgba(24,35,59,.94) !important;box-shadow:0 12px 28px rgba(24,35,59,.12) !important; }.result-card { background:rgba(255,255,255,.90) !important;border:1px solid rgba(255,255,255,.96) !important;box-shadow:0 18px 45px rgba(35,48,77,.09) !important;backdrop-filter:blur(16px); }.result-card h1,.result-card h2,.result-card h3 { color:var(--sp-text) !important;font-weight:550 !important; }.result-card>p,.result-grid span { color:var(--sp-muted) !important; }.score-main { background:#18233b !important; }.result-actions button,.result-topbar button { background:#f0efff !important;color:#4d49b8 !important;border:1px solid #dad8fb !important;border-radius:11px !important;font-weight:500 !important;box-shadow:0 5px 14px rgba(35,48,77,.05) !important; }.result-actions button:hover,.result-topbar button:hover { background:#e5e3ff !important; }

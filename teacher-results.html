@@ -1,0 +1,174 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>ExamSecure | Student Results</title><link rel="stylesheet" href="teacher-dashboard.css"><link rel="stylesheet" href="portal-pages.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"></head><body><div class="bg-orb orb-one"></div><div class="bg-orb orb-two"></div><div class="bg-orb orb-three"></div><div class="app-layout"><aside class="sidebar" id="sidebar">
+
+            <!-- Brand -->
+
+            <div class="sidebar-brand">
+
+                <div class="brand-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+
+                <div class="brand-text">
+                    Exam<span>Secure</span>
+                </div>
+
+            </div>
+
+
+            <!-- Teacher Profile -->
+
+            <div class="sidebar-profile">
+
+                <div class="teacher-avatar">
+                    <img
+                        id="teacherProfilePhoto"
+                        src=""
+                        alt="Teacher"
+                    >
+
+                    <span id="teacherInitial">
+                        T
+                    </span>
+                </div>
+
+                <div class="profile-details">
+
+                    <strong id="teacherName">
+                        Teacher
+                    </strong>
+
+                    <small id="teacherEmail">
+                        teacher@gmail.com
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- Navigation -->
+
+            <nav class="sidebar-nav">
+
+                <p class="nav-title">
+                    MAIN MENU
+                </p>
+
+
+                <a
+                    href="teacher-dashboard.html"
+                    class="nav-item"
+                    data-section="dashboard"
+                >
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Dashboard</span>
+                </a>
+
+
+                <a
+                    href="create-exam.html"
+                    class="nav-item"
+                    data-section="create-exam"
+                >
+                    <i class="fa-solid fa-circle-plus"></i>
+                    <span>Create Exam</span>
+                </a>
+
+
+                <a
+                    href="manage-exams.html"
+                    class="nav-item"
+                    data-section="my-exams"
+                >
+                    <i class="fa-solid fa-file-lines"></i>
+                    <span>My Exams</span>
+                </a>
+
+
+                <a
+                    href="question-bank.html"
+                    class="nav-item"
+                    data-section="question-bank"
+                >
+                    <i class="fa-solid fa-database"></i>
+                    <span>Question Bank</span>
+                </a>
+
+
+                <p class="nav-title second-title">
+                    MANAGEMENT
+                </p>
+
+
+                <a
+                    href="teacher-results.html"
+                    class="nav-item"
+                    data-section="results"
+                >
+                    <i class="fa-solid fa-square-poll-vertical"></i>
+                    <span>Student Results</span>
+                </a>
+
+
+                <a
+                    href="analytics.html"
+                    class="nav-item"
+                    data-section="performance"
+                >
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Performance</span>
+                </a>
+
+
+                <a
+                    href="teacher-notifications.html"
+                    class="nav-item"
+                    data-section="notifications"
+                >
+                    <i class="fa-solid fa-bell"></i>
+                    <span>Notifications</span>
+
+                    <span class="notification-count">
+                        3
+                    </span>
+                </a>
+
+
+                <p class="nav-title second-title">
+                    ACCOUNT
+                </p>
+
+
+                <a
+                    href="teacher-profile.html"
+                    class="nav-item"
+                    data-section="profile"
+                >
+                    <i class="fa-solid fa-user"></i>
+                    <span>Profile</span>
+                </a>
+
+
+                <a
+                    href="teacher-settings.html"
+                    class="nav-item"
+                    data-section="settings"
+                >
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Settings</span>
+                </a>
+
+            </nav>
+
+
+            <!-- Logout -->
+
+            <button
+                class="logout-btn"
+                onclick="logout()"
+            >
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </button>
+
+        </aside><main class="main-content"><div class="portal-page"><div class="portal-top"><div><span class="welcome-small">MANAGEMENT</span><h1>Student Results</h1><p>Real student submissions from your exams.</p></div><span class="portal-live">LIVE DATA</span></div><section class="portal-card"><div class="portal-table-wrap"><table class="portal-table"><thead><tr><th>Student</th><th>Exam</th><th>Score</th><th>Correct</th><th>Incorrect</th><th>Performance</th><th>Submitted</th></tr></thead><tbody id="body"></tbody></table></div></section></div></main></div><script src="portal-pages.js"></script><script src="teacher-results.js"></script></body></html>

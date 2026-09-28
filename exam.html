@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamSecure | Exam</title>
+
+    <link rel="stylesheet" href="exam.css">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- =====================================================
+         SECURE EXAM ENTRY SCREEN
+         ===================================================== -->
+
+    <div id="secureEntryOverlay" class="secure-entry-overlay">
+
+        <div class="secure-entry-card">
+
+            <div class="secure-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+
+            <span class="secure-eyebrow">
+                EXAMSECURE PROTECTED MODE
+            </span>
+
+            <h1>Enter Secure Examination</h1>
+
+            <p class="secure-description">
+                This examination requires camera, microphone and
+                fullscreen access.
+            </p>
+
+            <div class="secure-requirements">
+
+                <div class="secure-requirement">
+                    <div class="requirement-icon">
+                        <i class="fa-solid fa-video"></i>
+                    </div>
+
+                    <div>
+                        <strong>Camera</strong>
+                        <span>Camera access is required</span>
+                    </div>
+
+                    <i class="fa-solid fa-circle-check requirement-check"></i>
+                </div>
+
+
+                <div class="secure-requirement">
+                    <div class="requirement-icon">
+                        <i class="fa-solid fa-microphone"></i>
+                    </div>
+
+                    <div>
+                        <strong>Microphone</strong>
+                        <span>Microphone access is required</span>
+                    </div>
+
+                    <i class="fa-solid fa-circle-check requirement-check"></i>
+                </div>
+
+
+                <div class="secure-requirement">
+                    <div class="requirement-icon">
+                        <i class="fa-solid fa-expand"></i>
+                    </div>
+
+                    <div>
+                        <strong>Fullscreen</strong>
+                        <span>Exam runs in fullscreen mode</span>
+                    </div>
+
+                    <i class="fa-solid fa-circle-check requirement-check"></i>
+                </div>
+
+
+                <div class="secure-requirement">
+                    <div class="requirement-icon">
+                        <i class="fa-solid fa-eye"></i>
+                    </div>
+
+                    <div>
+                        <strong>Protected Mode</strong>
+                        <span>Leaving the exam is monitored</span>
+                    </div>
+
+                    <i class="fa-solid fa-circle-check requirement-check"></i>
+                </div>
+
+            </div>
+
+
+            <div class="secure-warning-box">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                <div>
+                    <strong>Important</strong>
+
+                    <p>
+                        Do not switch tabs or leave fullscreen while
+                        taking the examination. Repeated violations
+                        may automatically submit your exam.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="enterSecureExamButton"
+                class="enter-secure-button">
+
+                <i class="fa-solid fa-shield-halved"></i>
+
+                Enter Secure Exam
+
+                <i class="fa-solid fa-arrow-right"></i>
+
+            </button>
+
+
+            <div
+                id="secureEntryMessage"
+                class="secure-entry-message">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         CAMERA PREVIEW
+         ===================================================== -->
+
+    <div id="cameraContainer" class="camera-container">
+
+        <div class="camera-header">
+            <span>
+                <i class="fa-solid fa-circle"></i>
+                LIVE
+            </span>
+
+            <button
+                type="button"
+                id="cameraMinimizeButton"
+                title="Minimize camera">
+                <i class="fa-solid fa-minus"></i>
+            </button>
+        </div>
+
+        <video
+            id="studentCamera"
+            autoplay
+            muted
+            playsinline>
+        </video>
+
+        <div id="cameraStatus" class="camera-status">
+            <i class="fa-solid fa-video"></i>
+            Camera Active
+        </div>
+
+    </div>
+
+
+    <div
+    id="microphoneStatus"
+    class="camera-status"
+>
+    <i class="fa-solid fa-microphone"></i>
+    Microphone Active
+</div>
+
+
+    <!-- =====================================================
+         SECURITY STATUS
+         ===================================================== -->
+
+    <div id="securityStatus" class="security-status">
+
+        <span>
+            <i class="fa-solid fa-shield-halved"></i>
+            Secure Mode
+        </span>
+
+        <span id="violationCount">
+            0 / 3
+        </span>
+
+    </div>
+
+
+    <!-- =====================================================
+         VIOLATION WARNING
+         ===================================================== -->
+
+    <div
+        id="securityWarning"
+        class="security-warning-overlay">
+
+        <div class="security-warning-card">
+
+            <div class="security-warning-icon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+
+            <h2>Security Warning</h2>
+
+            <p id="securityWarningText">
+                You have left the secure examination.
+            </p>
+
+            <strong id="securityWarningCount">
+                Violation 1 / 3
+            </strong>
+
+            <button
+                type="button"
+                id="returnToExamButton">
+
+                <i class="fa-solid fa-arrow-left"></i>
+                Return to Exam
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         EXISTING EXAM UI
+         ===================================================== -->
+
+    <div id="examApplication" class="exam-application">
+
+        <header class="exam-topbar">
+
+            <div class="exam-brand">
+
+                <div class="brand-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+
+                <strong>
+                    Exam<span>Secure</span>
+                </strong>
+
+            </div>
+
+
+            <div class="exam-topbar-right">
+
+                <span id="studentExamName">
+                    Student
+                </span>
+
+                <div
+                    class="timer-box"
+                    id="timerBox">
+
+                    <i class="fa-regular fa-clock"></i>
+
+                    <strong id="examTimer">
+                        00:00
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <main class="exam-page">
+
+            <section class="exam-heading-card">
+
+                <div>
+
+                    <span class="eyebrow">
+                        SECURE EXAMINATION
+                    </span>
+
+                    <h1 id="examTitle">
+                        Loading exam...
+                    </h1>
+
+                    <p id="examMeta">
+                        Loading questions...
+                    </p>
+
+                </div>
+
+
+                <div class="progress-wrap">
+
+                    <span id="questionProgressText">
+                        0 / 0 answered
+                    </span>
+
+                    <div class="progress-track">
+
+                        <div
+                            id="questionProgress">
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <form id="examForm">
+
+                <div id="questionsContainer"></div>
+
+
+                <div class="submit-panel">
+
+                    <div>
+
+                        <strong>
+                            Ready to submit?
+                        </strong>
+
+                        <p>
+                            You can submit manually, or the exam
+                            will submit automatically when the timer
+                            reaches zero.
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="submit-button">
+
+                        <i class="fa-solid fa-paper-plane"></i>
+
+                        Submit Exam
+
+                    </button>
+
+                </div>
+
+            </form>
+
+
+            <div
+                id="examMessage"
+                class="exam-message">
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <script src="/socket.io/socket.io.js"></script>
+<script src="exam.js"></script>
+
+</body>
+</html>

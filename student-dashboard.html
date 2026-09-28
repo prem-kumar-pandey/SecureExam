@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- Important for mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ExamSecure - Student Dashboard</title>
+
+    <link rel="stylesheet" href="student-dashboard.css">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- =========================================
+         SIDEBAR
+    ========================================== -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div class="brand-text">
+                Exam<span>Secure</span>
+            </div>
+        </div>
+
+        <div class="sidebar-profile">
+            <div class="teacher-avatar student-avatar">
+                <img id="studentSidebarPhoto" src="" alt="Student">
+                <span id="studentSidebarInitial">S</span>
+            </div>
+
+            <div class="profile-details">
+                <strong id="studentSidebarName">Student</strong>
+                <small id="studentSidebarEmail">student@gmail.com</small>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <p class="nav-title">MAIN MENU</p>
+
+            <a href="student-dashboard.html" class="nav-item" data-section="dashboard" active">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="available-exams.html" class="nav-item" data-section="available-exams">
+                <i class="fa-solid fa-file-circle-check"></i>
+                <span>Available Exams</span>
+            </a>
+
+            <a href="upcoming-exams.html" class="nav-item" data-section="upcoming">
+                <i class="fa-solid fa-clock"></i>
+                <span>Upcoming Exams</span>
+            </a>
+
+            <a href="completed-exams.html" class="nav-item" data-section="completed">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Completed Exams</span>
+            </a>
+
+            <a href="performance.html" class="nav-item" data-section="performance">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>My Performance</span>
+            </a>
+
+            <a href="leaderboard.html" class="nav-item" data-section="leaderboard">
+                <i class="fa-solid fa-ranking-star"></i>
+                <span>Leaderboard</span>
+            </a>
+
+            <p class="nav-title second-title">ACCOUNT</p>
+
+            <a href="notifications.html" class="nav-item" data-section="notifications">
+                <i class="fa-solid fa-bell"></i>
+                <span>Notifications</span>
+                <span class="notification-count" id="studentNotificationCount">0</span>
+            </a>
+
+            <a href="student-profile.html" class="nav-item" data-section="profile">
+                <i class="fa-solid fa-user"></i>
+                <span>Profile</span>
+            </a>
+
+            <a href="student-settings.html" class="nav-item" data-section="settings">
+                <i class="fa-solid fa-gear"></i>
+                <span>Settings</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+            <a href="#" class="nav-item logout" onclick="logout()">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+
+    </aside>
+
+
+    <!-- =========================================
+         MAIN AREA
+    ========================================== -->
+
+    <main class="main">
+
+        <!-- TOP BAR -->
+
+        <header class="topbar">
+
+            <button class="mobile-menu" onclick="toggleSidebar()">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <div class="welcome">
+
+               <h1>
+    Welcome , <span id="studentName">Student</span>!
+    <span>👋</span>
+</h1>
+
+                <p>
+                    Here's your exam activity and performance overview.
+                </p>
+
+            </div>
+
+            <div class="top-actions">
+
+                <button class="notification-btn" onclick="showNotifications()">
+                    <i class="fa-solid fa-bell"></i>
+                    <span></span>
+                </button>
+
+            </div>
+
+        </header>
+
+
+        <!-- =========================================
+             STAT CARDS
+        ========================================== -->
+
+        <section class="stats-grid">
+
+            <div class="stat-card">
+
+                <div class="stat-content">
+
+                    <p>Total Exams Attempted</p>
+
+                    <h2 id="totalAttempts">12</h2>
+
+                    <span class="stat-change positive">
+                        <i class="fa-solid fa-arrow-up"></i>
+                        20% this month
+                    </span>
+
+                </div>
+
+                <div class="stat-icon purple">
+                    <i class="fa-solid fa-file-circle-check"></i>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-content">
+
+                    <p>Exams Completed</p>
+
+                    <h2 id="completedExams">9</h2>
+
+                    <span class="stat-change positive">
+                        <i class="fa-solid fa-check"></i>
+                        3 this month
+                    </span>
+
+                </div>
+
+                <div class="stat-icon blue">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-content">
+
+                    <p>Average Score</p>
+
+                    <h2>
+                        <span id="averageScore">78</span>
+                        <small>%</small>
+                    </h2>
+
+                    <span class="stat-change positive">
+                        <i class="fa-solid fa-arrow-up"></i>
+                        6.4% improvement
+                    </span>
+
+                </div>
+
+                <div class="stat-icon green">
+                    <i class="fa-solid fa-chart-simple"></i>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-content">
+
+                    <p>Best Score</p>
+
+                    <h2>
+                        <span id="bestScore">94</span>
+                        <small>%</small>
+                    </h2>
+
+                    <span class="stat-change">
+                        Highest score
+                    </span>
+
+                </div>
+
+                <div class="stat-icon orange">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================================
+             CURRENT EXAMS
+        ========================================== -->
+
+        <section class="section-block" id="availableExamsSection">
+
+            <div class="section-heading">
+
+                <div>
+                    <h2>Current Exams</h2>
+                    <p>Exams that are available for you right now.</p>
+                </div>
+
+                <button class="view-all" onclick="window.location.href='/available-exams.html'">
+                    View all
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+
+            </div>
+
+
+            <div class="exam-grid" id="availableExamsGrid"></div>
+
+        </section>
+
+
+        <!-- =========================================
+             PERFORMANCE + ACTIVITY
+        ========================================== -->
+
+        <section class="dashboard-grid" id="performanceSection">
+
+
+            <!-- PERFORMANCE -->
+
+            <div class="panel performance-panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <h2>Performance Overview</h2>
+                        <p>Your exam scores over the last 7 attempts.</p>
+                    </div>
+
+                    <select id="performanceRange" onchange="changePerformance()">
+                        <option value="7">Last 7 Exams</option>
+                        <option value="5">Last 5 Exams</option>
+                        <option value="3">Last 3 Exams</option>
+                    </select>
+
+                </div>
+
+                <div class="chart-container">
+
+                    <div class="y-axis">
+                        <span>100</span>
+                        <span>80</span>
+                        <span>60</span>
+                        <span>40</span>
+                        <span>20</span>
+                        <span>0</span>
+                    </div>
+
+                    <div class="chart">
+
+                        <div class="grid-line line-100"></div>
+                        <div class="grid-line line-80"></div>
+                        <div class="grid-line line-60"></div>
+                        <div class="grid-line line-40"></div>
+                        <div class="grid-line line-20"></div>
+                        <div class="grid-line line-0"></div>
+
+                        <div class="bars" id="performanceBars">
+
+                            <div class="bar-item">
+                                <div class="bar-value">65%</div>
+                                <div class="bar" style="height:65%"></div>
+                                <span>DSA</span>
+                            </div>
+
+                            <div class="bar-item">
+                                <div class="bar-value">72%</div>
+                                <div class="bar" style="height:72%"></div>
+                                <span>DBMS</span>
+                            </div>
+
+                            <div class="bar-item">
+                                <div class="bar-value">58%</div>
+                                <div class="bar" style="height:58%"></div>
+                                <span>OS</span>
+                            </div>
+
+                            <div class="bar-item">
+                                <div class="bar-value">81%</div>
+                                <div class="bar" style="height:81%"></div>
+                                <span>CN</span>
+                            </div>
+
+                            <div class="bar-item">
+                                <div class="bar-value">76%</div>
+                                <div class="bar" style="height:76%"></div>
+                                <span>SE</span>
+                            </div>
+
+                            <div class="bar-item">
+                                <div class="bar-value">88%</div>
+                                <div class="bar" style="height:88%"></div>
+                                <span>CA</span>
+                            </div>
+
+                            <div class="bar-item">
+                                <div class="bar-value">94%</div>
+                                <div class="bar" style="height:94%"></div>
+                                <span>JS</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ACTIVITY -->
+
+            <div class="panel activity-panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <h2>Recent Activity</h2>
+                        <p>Your latest exam activities.</p>
+                    </div>
+
+                    <button class="icon-btn" onclick="refreshActivity()">
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>
+
+                </div>
+
+
+                <div class="activity-list" id="studentActivityList"></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================================
+             COMPLETED EXAMS
+        ========================================== -->
+
+        <section class="panel completed-panel" id="completedSection">
+
+            <div class="panel-header">
+
+                <div>
+                    <h2>Recently Completed Exams</h2>
+                    <p>View your previous exam results.</p>
+                </div>
+
+                <button class="view-all" onclick="window.location.href='/completed-exams.html'">
+                    View all
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Exam</th>
+                            <th>Date</th>
+                            <th>Questions</th>
+                            <th>Score</th>
+                            <th>Performance</th>
+                            <th>Result</th>
+                            <th></th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="completedResultsBody"></tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================================
+             UPCOMING EXAM
+        ========================================== -->
+
+        <section class="upcoming-banner" id="upcomingSection">
+
+            <div class="upcoming-left">
+
+                <div class="upcoming-icon">
+                    <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+
+                <div>
+
+                    <span>YOUR NEXT EXAM</span>
+
+                    <h2 id="upcomingExamTitle">Computer Architecture</h2>
+
+                    <p id="upcomingExamMeta">
+                        Tomorrow • 10:00 AM • 45 Minutes • 30 Questions
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="countdown">
+
+                <div>
+                    <strong id="countHours">21</strong>
+                    <span>Hours</span>
+                </div>
+
+                <b>:</b>
+
+                <div>
+                    <strong id="countMinutes">34</strong>
+                    <span>Minutes</span>
+                </div>
+
+                <b>:</b>
+
+                <div>
+                    <strong id="countSeconds">28</strong>
+                    <span>Seconds</span>
+                </div>
+
+            </div>
+
+
+            <button onclick="window.location.href='/upcoming-exams.html'">
+                View Exam
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+
+        </section>
+
+
+
+        <!-- =========================================
+             STUDENT ACCOUNT / INFORMATION SECTIONS
+        ========================================== -->
+
+        <section class="student-extra-section" id="leaderboardSection">
+            <div class="student-extra-header">
+                <div>
+                    <span>COMMUNITY</span>
+                    <h2>Leaderboard</h2>
+                    <p>Recent top exam performances.</p>
+                </div>
+            </div>
+            <div id="leaderboardList" class="student-extra-list"></div>
+        </section>
+
+        <section class="student-extra-section" id="notificationsSection">
+            <div class="student-extra-header">
+                <div>
+                    <span>UPDATES</span>
+                    <h2>Notifications</h2>
+                    <p>Exam and result updates for your account.</p>
+                </div>
+            </div>
+            <div id="studentNotificationsList" class="student-extra-list"></div>
+        </section>
+
+        <section class="student-extra-section" id="profileSection">
+            <div class="student-extra-header">
+                <div>
+                    <span>ACCOUNT</span>
+                    <h2>Profile</h2>
+                    <p>Your authenticated student profile.</p>
+                </div>
+            </div>
+            <div class="student-profile-card">
+                <div class="student-profile-large" id="studentProfileLargeInitial">S</div>
+                <div>
+                    <h2 id="studentProfileFullName">Student</h2>
+                    <p id="studentProfileEmail">student@gmail.com</p>
+                    <small>Role: Student</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="student-extra-section" id="settingsSection">
+            <div class="student-extra-header">
+                <div>
+                    <span>ACCOUNT</span>
+                    <h2>Settings</h2>
+                    <p>Dashboard preferences saved only in this browser.</p>
+                </div>
+            </div>
+            <div class="student-settings">
+                <label>
+                    <span>
+                        <strong>Confirm before submitting</strong>
+                        <small>Ask before final exam submission.</small>
+                    </span>
+                    <input type="checkbox" id="confirmSubmitSetting" checked>
+                </label>
+                <label>
+                    <span>
+                        <strong>Remember dashboard preference</strong>
+                        <small>Keep your selected dashboard range.</small>
+                    </span>
+                    <input type="checkbox" id="rememberRangeSetting" checked>
+                </label>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>
+                © 2026 ExamSecure. Secure Examination Platform.
+            </p>
+
+            <span>
+                <i class="fa-solid fa-shield-halved"></i>
+                Your examination data is protected.
+            </span>
+        </footer>
+
+    </main>
+
+</div>
+
+
+<!-- =========================================
+     TOAST
+========================================== -->
+
+<div class="toast" id="toast">
+
+    <i class="fa-solid fa-circle-check"></i>
+
+    <span id="toastMessage">
+        Action completed
+    </span>
+
+</div>
+
+
+<script src="student-dashboard.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+async function load(){try{const me=await api("/api/me");if(!me.loggedIn||me.user?.role!=="student"){location.href="/loginPrem.html";return;}const data=await api("/api/leaderboard");const g=document.getElementById("grid");const rows=data.leaderboard||[];g.innerHTML=rows.length?rows.map(x=>`<article class="portal-card"><div class="portal-row"><span class="exam-status active-status">RANK #${x.rank}</span></div><h2>${esc(x.studentName)}</h2><p>${esc(x.examTitle)}</p><div class="meta"><div><span>Score</span><strong>${x.score}/${x.totalMarks}</strong></div><div><span>Percentage</span><strong>${x.percentage}%</strong></div><div><span>Username</span><strong>${esc(x.username)}</strong></div></div></article>`).join(""):`<div class="portal-empty">No leaderboard data yet.</div>`;}catch(e){document.getElementById("grid").innerHTML=`<div class="portal-empty">${esc(e.message)}</div>`;}}
+const state={user:null,exams:{available:[],upcoming:[],expired:[]},results:[],dashboard:{}};
+function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
+function dt(v){if(!v)return "-";const d=new Date(v);return Number.isNaN(d.getTime())?"-":d.toLocaleString(undefined,{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});}
+function d(v){if(!v)return "-";const x=new Date(v);return Number.isNaN(x.getTime())?"-":x.toLocaleDateString(undefined,{day:"2-digit",month:"short",year:"numeric"});}
+async function api(url,opt={}){const r=await fetch(url,{credentials:"include",...opt});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.message||"Request failed.");return data;}
+async function auth(){const x=await api("/api/me");if(!x.loggedIn||!x.user){location.href="/loginPrem.html";return false;}if(x.user.role&&x.user.role!=="student"){location.href="/teacher-dashboard.html";return false;}state.user=x.user;document.querySelectorAll("[data-user-name]").forEach(e=>e.textContent=x.user.fullname||"Student");return true;}
+async function load(){state.exams=await api("/api/student/exams");state.results=(await api("/api/student/results")).results||[];state.dashboard=await api("/api/student/dashboard");render();}
+function goExam(id){location.href=`/exam.html?id=${encodeURIComponent(id)}`;}
+async function logout(){await fetch("/api/logout",{method:"POST",credentials:"include"}).catch(()=>{});location.href="/loginPrem.html";}
+async function startRealtime(){await load();setInterval(load,5000);}
+
+document.addEventListener("DOMContentLoaded",async()=>{if(await auth())load();setInterval(()=>auth().then(x=>x&&load()),5000);});

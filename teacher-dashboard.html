@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ExamSecure | Teacher Dashboard</title>
+
+    <link rel="stylesheet" href="teacher-dashboard.css">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+</head>
+
+<body>
+
+    <!-- Background -->
+    <div class="bg-orb orb-one"></div>
+    <div class="bg-orb orb-two"></div>
+    <div class="bg-orb orb-three"></div>
+
+
+    <div class="app-layout">
+
+        <!-- ======================================
+             SIDEBAR
+        ======================================= -->
+
+        <aside class="sidebar" id="sidebar">
+
+            <!-- Brand -->
+
+            <div class="sidebar-brand">
+
+                <div class="brand-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+
+                <div class="brand-text">
+                    Exam<span>Secure</span>
+                </div>
+
+            </div>
+
+
+            <!-- Teacher Profile -->
+
+            <div class="sidebar-profile">
+
+                <div class="teacher-avatar">
+                    <img
+                        id="teacherProfilePhoto"
+                        src=""
+                        alt="Teacher"
+                    >
+
+                    <span id="teacherInitial">
+                        T
+                    </span>
+                </div>
+
+                <div class="profile-details">
+
+                    <strong id="teacherName">
+                        Teacher
+                    </strong>
+
+                    <small id="teacherEmail">
+                        teacher@gmail.com
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- Navigation -->
+
+            <nav class="sidebar-nav">
+
+                <p class="nav-title">
+                    MAIN MENU
+                </p>
+
+
+                <a
+                    href="teacher-dashboard.html"
+                    class="nav-item"
+                    data-section="dashboard" active"
+                >
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Dashboard</span>
+                </a>
+
+
+                <a
+                    href="create-exam.html"
+                    class="nav-item"
+                    data-section="create-exam"
+                >
+                    <i class="fa-solid fa-circle-plus"></i>
+                    <span>Create Exam</span>
+                </a>
+
+
+                <a
+                    href="manage-exams.html"
+                    class="nav-item"
+                    data-section="my-exams"
+                >
+                    <i class="fa-solid fa-file-lines"></i>
+                    <span>My Exams</span>
+                </a>
+
+
+                <a
+    href="live-monitor.html"
+    class="nav-item"
+    data-section="live-monitoring"
+>
+    <i class="fa-solid fa-video"></i>
+    <span>Live Monitoring</span>
+</a>
+
+
+                
+                    <i class="fa-solid fa-database"></i>
+                    <span>Question Bank</span>
+                </a>
+
+
+                <p class="nav-title second-title">
+                    MANAGEMENT
+                </p>
+
+
+                <a
+                    href="teacher-results.html"
+                    class="nav-item"
+                    data-section="results"
+                >
+                    <i class="fa-solid fa-square-poll-vertical"></i>
+                    <span>Student Results</span>
+                </a>
+
+
+                <a
+                    href="analytics.html"
+                    class="nav-item"
+                    data-section="performance"
+                >
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Performance</span>
+                </a>
+
+
+                <a
+                    href="teacher-notifications.html"
+                    class="nav-item"
+                    data-section="notifications"
+                >
+                    <i class="fa-solid fa-bell"></i>
+                    <span>Notifications</span>
+
+                    <span class="notification-count">
+                        3
+                    </span>
+                </a>
+
+
+                <p class="nav-title second-title">
+                    ACCOUNT
+                </p>
+
+
+                <a
+                    href="teacher-profile.html"
+                    class="nav-item"
+                    data-section="profile"
+                >
+                    <i class="fa-solid fa-user"></i>
+                    <span>Profile</span>
+                </a>
+
+
+                <a
+                    href="teacher-settings.html"
+                    class="nav-item"
+                    data-section="settings"
+                >
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Settings</span>
+                </a>
+
+            </nav>
+
+
+            <!-- Logout -->
+
+            <button
+                class="logout-btn"
+                onclick="logout()"
+            >
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </button>
+
+        </aside>
+
+
+        <!-- ======================================
+             MAIN CONTENT
+        ======================================= -->
+
+        <main class="main-content">
+
+
+
+
+            <!-- ======================================
+                 DASHBOARD CONTENT
+            ======================================= -->
+
+            <section
+                class="content-section active-section"
+                id="dashboardSection"
+            >
+
+
+                <!-- Quick Create -->
+
+                <div class="hero-card">
+
+                    <div class="hero-content">
+
+                        <div class="hero-label">
+                            <i class="fa-solid fa-sparkles"></i>
+                            TEACHER WORKSPACE
+                        </div>
+
+                        <h2>
+                            Create smarter exams.
+                            <span>Manage everything.</span>
+                        </h2>
+
+                        <p>
+                            Create secure examinations, manage
+                            questions and monitor your students
+                            from one place.
+                        </p>
+
+                        <button
+                            class="hero-button"
+                            onclick="openSection('create-exam')"
+                        >
+                            <i class="fa-solid fa-plus"></i>
+                            Create New Exam
+                        </button>
+
+                    </div>
+
+
+                    <div class="hero-visual">
+
+                        <div class="floating-card card-one">
+                            <i class="fa-solid fa-file-circle-check"></i>
+                            <span>Secure Exams</span>
+                        </div>
+
+                        <div class="floating-card card-two">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span>Live Performance</span>
+                        </div>
+
+                        <div class="hero-shield">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Statistics -->
+
+                <div class="stats-grid">
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon purple">
+                            <i class="fa-solid fa-file-circle-check"></i>
+                        </div>
+
+                        <div class="stat-info">
+
+                            <span>
+                                Total Exams
+                            </span>
+
+                            <strong id="totalExams">
+                                8
+                            </strong>
+
+                            <small>
+                                <i class="fa-solid fa-arrow-up"></i>
+                                12% this month
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon blue">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+
+                        <div class="stat-info">
+
+                            <span>
+                                Published Exams
+                            </span>
+
+                            <strong id="publishedExams">
+                                6
+                            </strong>
+
+                            <small>
+                                <i class="fa-solid fa-check"></i>
+                                Active
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon cyan">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+
+                        <div class="stat-info">
+
+                            <span>
+                                Students
+                            </span>
+
+                            <strong id="totalStudents">
+                                124
+                            </strong>
+
+                            <small>
+                                <i class="fa-solid fa-arrow-up"></i>
+                                8 new students
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon green">
+                            <i class="fa-solid fa-chart-simple"></i>
+                        </div>
+
+                        <div class="stat-info">
+
+                            <span>
+                                Avg. Score
+                            </span>
+
+                            <strong id="averageScore">
+                                78%
+                            </strong>
+
+                            <small>
+                                <i class="fa-solid fa-arrow-up"></i>
+                                4.6% improvement
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Main Grid -->
+
+                <div class="dashboard-grid">
+
+
+                    <!-- Recent Exams -->
+
+                    <div class="dashboard-card exams-card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <span class="card-label">
+                                    EXAM MANAGEMENT
+                                </span>
+
+                                <h3>
+                                    Recent Exams
+                                </h3>
+                            </div>
+
+                            <button
+                                class="view-all"
+                                onclick="window.location.href='/manage-exams.html'"
+                            >
+                                View All
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+
+                        </div>
+
+
+                        <div class="exam-list" id="recentTeacherExams"></div>
+
+                    </div>
+
+
+                    <!-- Performance -->
+
+                    <div class="dashboard-card performance-card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <span class="card-label">
+                                    OVERVIEW
+                                </span>
+
+                                <h3>
+                                    Student Performance
+                                </h3>
+                            </div>
+
+                            <button class="filter-button">
+                                This Month
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </button>
+
+                        </div>
+
+
+                        <div class="performance-number">
+
+                            <strong>
+                                78%
+                            </strong>
+
+                            <span>
+                                Average Score
+                            </span>
+
+                        </div>
+
+
+                        <div class="chart">
+
+                            <div class="chart-y">
+                                <span>100</span>
+                                <span>75</span>
+                                <span>50</span>
+                                <span>25</span>
+                                <span>0</span>
+                            </div>
+
+                            <div class="chart-area">
+
+                                <div class="grid-line"></div>
+                                <div class="grid-line"></div>
+                                <div class="grid-line"></div>
+                                <div class="grid-line"></div>
+                                <div class="grid-line"></div>
+
+                                <svg
+                                    viewBox="0 0 500 180"
+                                    preserveAspectRatio="none"
+                                    class="performance-line"
+                                >
+
+                                    <defs>
+
+                                        <linearGradient
+                                            id="chartGradient"
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="1"
+                                        >
+
+                                            <stop
+                                                offset="0%"
+                                                stop-opacity="0.35"
+                                            />
+
+                                            <stop
+                                                offset="100%"
+                                                stop-opacity="0"
+                                            />
+
+                                        </linearGradient>
+
+                                    </defs>
+
+
+                                    <path
+                                        class="chart-fill"
+                                        d="
+                                        M0,135
+                                        C45,125 60,110 100,118
+                                        C140,125 150,85 195,94
+                                        C235,103 250,72 290,80
+                                        C330,88 340,45 380,58
+                                        C420,70 440,30 500,38
+                                        L500,180
+                                        L0,180 Z
+                                        "
+                                    />
+
+                                    <path
+                                        class="chart-path"
+                                        d="
+                                        M0,135
+                                        C45,125 60,110 100,118
+                                        C140,125 150,85 195,94
+                                        C235,103 250,72 290,80
+                                        C330,88 340,45 380,58
+                                        C420,70 440,30 500,38
+                                        "
+                                    />
+
+                                </svg>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="chart-months">
+
+                            <span>Jan</span>
+                            <span>Feb</span>
+                            <span>Mar</span>
+                            <span>Apr</span>
+                            <span>May</span>
+                            <span>Jun</span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Bottom Grid -->
+
+                <div class="bottom-grid">
+
+
+                    <!-- Quick Actions -->
+
+                    <div class="dashboard-card quick-card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <span class="card-label">
+                                    QUICK ACCESS
+                                </span>
+
+                                <h3>
+                                    Quick Actions
+                                </h3>
+                            </div>
+
+                        </div>
+
+
+                        <div class="quick-actions">
+
+                            <button
+                                onclick="openSection('create-exam')"
+                            >
+                                <span class="quick-icon purple">
+                                    <i class="fa-solid fa-plus"></i>
+                                </span>
+
+                                <span>
+                                    Create Exam
+                                </span>
+
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+
+
+                            <button
+                                onclick="openSection('question-bank')"
+                            >
+                                <span class="quick-icon blue">
+                                    <i class="fa-solid fa-database"></i>
+                                </span>
+
+                                <span>
+                                    Question Bank
+                                </span>
+
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+
+
+                            <button
+                                onclick="openSection('results')"
+                            >
+                                <span class="quick-icon cyan">
+                                    <i class="fa-solid fa-square-poll-vertical"></i>
+                                </span>
+
+                                <span>
+                                    View Results
+                                </span>
+
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Upcoming -->
+
+                    <div class="dashboard-card upcoming-card">
+
+                        <div class="card-header">
+
+                            <div>
+                                <span class="card-label">
+                                    SCHEDULE
+                                </span>
+
+                                <h3>
+                                    Upcoming Exams
+                                </h3>
+                            </div>
+
+                            <button class="view-all" onclick="window.location.href='/manage-exams.html'">
+                                View All
+                            </button>
+
+                        </div>
+
+
+                        <div id="teacherUpcomingList" class="upcoming-list"></div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- ======================================
+                 FUNCTIONAL EXAM MANAGEMENT
+            ======================================= -->
+
+            <section class="content-section" id="create-examSection">
+
+                <div class="page-heading">
+                    <span class="welcome-small">EXAM MANAGEMENT</span>
+                    <h1 id="createExamHeading">Create Exam</h1>
+                    <p>Create a real exam that will appear on the Student Dashboard when published.</p>
+                </div>
+
+                <div class="functional-panel">
+                    <form id="examForm">
+
+                        <input type="hidden" id="editingExamId">
+
+                        <div class="form-grid">
+                            <label>
+                                Exam Name
+                                <input id="examTitle" type="text" required placeholder="">
+                            </label>
+
+                            <label>
+                                Subject
+                                <input id="examSubject" type="text" required placeholder="">
+                            </label>
+
+                            <label>
+                                Course / Exam Code
+                                <input id="examCode" type="text" required placeholder="">
+                            </label>
+
+                            <label>
+                                Duration (minutes)
+                                <input id="examDuration" type="number" min="1" required value="30">
+                            </label>
+
+                            <label>
+                                Total Marks
+                                <input id="examTotalMarks" type="number" min="1" required value="10">
+                            </label>
+
+                            <label>
+                                Status
+                                <select id="examStatus">
+                                    <option value="published">Publish Now</option>
+                                    <option value="draft">Save as Draft</option>
+                                </select>
+                            </label>
+
+                            <label class="full-width">
+                                Start Date & Time (optional)
+                                <input id="examScheduledAt" type="datetime-local">
+                                <small>Leave empty to make a published exam available immediately.</small>
+                            </label>
+
+                            <label>
+    Exam Start Date & Time
+    <input
+        id="examScheduledAt"
+        type="datetime-local"
+        required
+    >
+    <small>
+        Students can enter only when this session begins.
+    </small>
+</label>
+
+<label>
+    Exam Session End Date & Time
+    <input
+        id="examSessionEndsAt"
+        type="datetime-local"
+        required
+    >
+    <small>
+        After this time, no student can continue the exam.
+    </small>
+</label>
+                        </div>
+
+                        <div class="question-editor-header">
+                            <div>
+                                <span class="card-label">QUESTION PAPER</span>
+                                <h3>Questions</h3>
+                            </div>
+
+                            <button type="button" class="secondary-action" onclick="addQuestion()">
+                                <i class="fa-solid fa-plus"></i>
+                                Add Question
+                            </button>
+                        </div>
+
+                        <div id="questionsContainer"></div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="hero-button">
+                                <i class="fa-solid fa-cloud-arrow-up"></i>
+                                <span id="examSubmitText">Create Exam</span>
+                            </button>
+
+                            <button type="button" class="secondary-action" onclick="resetExamForm()">
+                                Clear
+                            </button>
+                        </div>
+
+                        <p id="examFormMessage" class="form-message"></p>
+
+                    </form>
+                </div>
+
+            </section>
+
+
+            <section class="content-section" id="my-examsSection">
+
+                <div class="page-heading">
+                    <span class="welcome-small">EXAM MANAGEMENT</span>
+                    <h1>My Exams</h1>
+                    <p>Manage exams you created, publish drafts, edit questions, or remove an exam.</p>
+                </div>
+
+                <div class="functional-panel">
+                    <div id="teacherExamsList" class="management-list"></div>
+                </div>
+
+            </section>
+
+
+            <section class="content-section" id="question-bankSection">
+
+                <div class="page-heading">
+                    <span class="welcome-small">QUESTION MANAGEMENT</span>
+                    <h1>Question Bank</h1>
+                    <p>Questions saved inside your exams are shown here.</p>
+                </div>
+
+                <div class="functional-panel">
+                    <div id="questionBankList" class="management-list"></div>
+                </div>
+
+            </section>
+
+
+            <section class="content-section" id="resultsSection">
+
+                <div class="page-heading">
+                    <span class="welcome-small">MANAGEMENT</span>
+                    <h1>Student Results</h1>
+                    <p>Actual submissions from students who attempted your published exams.</p>
+                </div>
+
+                <div class="functional-panel table-scroll">
+                    <table class="functional-table">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Exam</th>
+                                <th>Score</th>
+                                <th>Correct</th>
+                                <th>Incorrect</th>
+                                <th>Performance</th>
+                                <th>Submitted</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teacherResultsBody"></tbody>
+                    </table>
+                </div>
+
+            </section>
+
+
+            <section class="content-section" id="performanceSection">
+
+                <div class="page-heading">
+                    <span class="welcome-small">ANALYTICS</span>
+                    <h1>Performance</h1>
+                    <p>Performance calculated from real student submissions.</p>
+                </div>
+
+                <div class="functional-panel">
+                    <div class="analytics-summary">
+                        <div>
+                            <span>Average Score</span>
+                            <strong id="performanceAverage">0%</strong>
+                        </div>
+                        <div>
+                            <span>Unique Students</span>
+                            <strong id="performanceStudents">0</strong>
+                        </div>
+                        <div>
+                            <span>Total Submissions</span>
+                            <strong id="performanceAttempts">0</strong>
+                        </div>
+                    </div>
+                    <div id="teacherPerformanceList" class="performance-list"></div>
+                </div>
+
+            </section>
+
+
+            <section class="content-section" id="notificationsSection">
+
+                <div class="page-heading">
+                    <span class="welcome-small">UPDATES</span>
+                    <h1>Notifications</h1>
+                    <p>Recent platform activity related to your exams.</p>
+                </div>
+
+                <div class="functional-panel">
+                    <div id="teacherNotificationsList" class="management-list"></div>
+                </div>
+
+            </section>
+
+
+            <section class="content-section" id="profileSection">
+
+                <div class="page-heading">
+                    <span class="welcome-small">ACCOUNT</span>
+                    <h1>Teacher Profile</h1>
+                    <p>Your profile information from the authenticated account.</p>
+                </div>
+
+                <div class="functional-panel profile-panel">
+                    <div class="profile-large">
+                        <div class="large-avatar" id="profileInitial">T</div>
+                        <div>
+                            <h2 id="profileFullName">Teacher</h2>
+                            <p id="profileEmail">teacher@gmail.com</p>
+                            <small>Role: Teacher</small>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+
+            <section class="content-section" id="settingsSection">
+
+                <div class="page-heading">
+                    <span class="welcome-small">ACCOUNT</span>
+                    <h1>Settings</h1>
+                    <p>Local dashboard preferences. These do not alter exam data.</p>
+                </div>
+
+                <div class="functional-panel settings-panel">
+                    <label class="setting-row">
+                        <span>
+                            <strong>Confirm before deleting an exam</strong>
+                            <small>Ask for confirmation before a teacher removes an exam.</small>
+                        </span>
+                        <input type="checkbox" id="confirmDeleteSetting" checked>
+                    </label>
+                    <label class="setting-row">
+                        <span>
+                            <strong>Show notifications after actions</strong>
+                            <small>Display a small confirmation message after successful actions.</small>
+                        </span>
+                        <input type="checkbox" id="toastSetting" checked>
+                    </label>
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <script src="teacher-dashboard.js"></script>
+
+</body>
+</html>

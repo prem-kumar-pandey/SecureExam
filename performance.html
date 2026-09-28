@@ -1,0 +1,85 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>ExamSecure | My Performance</title><link rel="stylesheet" href="student-dashboard.css"><link rel="stylesheet" href="portal-pages.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"></head><body><div class="bg-orb orb-one"></div><div class="bg-orb orb-two"></div><div class="bg-orb orb-three"></div><div class="app-layout"><aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div class="brand-text">
+                Exam<span>Secure</span>
+            </div>
+        </div>
+
+        <div class="sidebar-profile">
+            <div class="teacher-avatar student-avatar">
+                <img id="studentSidebarPhoto" src="" alt="Student">
+                <span id="studentSidebarInitial">S</span>
+            </div>
+
+            <div class="profile-details">
+                <strong id="studentSidebarName">Student</strong>
+                <small id="studentSidebarEmail">student@gmail.com</small>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <p class="nav-title">MAIN MENU</p>
+
+            <a href="student-dashboard.html" class="nav-item" data-section="dashboard">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="available-exams.html" class="nav-item" data-section="available-exams">
+                <i class="fa-solid fa-file-circle-check"></i>
+                <span>Available Exams</span>
+            </a>
+
+            <a href="upcoming-exams.html" class="nav-item" data-section="upcoming">
+                <i class="fa-solid fa-clock"></i>
+                <span>Upcoming Exams</span>
+            </a>
+
+            <a href="completed-exams.html" class="nav-item" data-section="completed">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Completed Exams</span>
+            </a>
+
+            <a href="performance.html" class="nav-item" data-section="performance">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>My Performance</span>
+            </a>
+
+            <a href="leaderboard.html" class="nav-item" data-section="leaderboard">
+                <i class="fa-solid fa-ranking-star"></i>
+                <span>Leaderboard</span>
+            </a>
+
+            <p class="nav-title second-title">ACCOUNT</p>
+
+            <a href="notifications.html" class="nav-item" data-section="notifications">
+                <i class="fa-solid fa-bell"></i>
+                <span>Notifications</span>
+                <span class="notification-count" id="studentNotificationCount">0</span>
+            </a>
+
+            <a href="student-profile.html" class="nav-item" data-section="profile">
+                <i class="fa-solid fa-user"></i>
+                <span>Profile</span>
+            </a>
+
+            <a href="student-settings.html" class="nav-item" data-section="settings">
+                <i class="fa-solid fa-gear"></i>
+                <span>Settings</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+            <a href="#" class="nav-item logout" onclick="logout()">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+
+    </aside><main class="main-content"><div class="portal-page"><div class="portal-top"><div><span class="welcome-small">ANALYTICS</span><h1>My Performance</h1><p>Your real score history and performance statistics.</p></div><span class="portal-live">LIVE DATA</span></div><div id="kpis" class="portal-kpis"></div><div id="grid" class="portal-grid"></div></div></main></div><script src="portal-pages.js"></script><script src="performance.js"></script></body></html>

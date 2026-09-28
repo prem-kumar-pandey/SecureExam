@@ -1,0 +1,13 @@
+const state={user:null,exams:{available:[],upcoming:[],expired:[]},results:[],dashboard:{}};
+function esc(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
+function dt(v){if(!v)return "-";const d=new Date(v);return Number.isNaN(d.getTime())?"-":d.toLocaleString(undefined,{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});}
+function d(v){if(!v)return "-";const x=new Date(v);return Number.isNaN(x.getTime())?"-":x.toLocaleDateString(undefined,{day:"2-digit",month:"short",year:"numeric"});}
+async function api(url,opt={}){const r=await fetch(url,{credentials:"include",...opt});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.message||"Request failed.");return data;}
+async function auth(){const x=await api("/api/me");if(!x.loggedIn||!x.user){location.href="/loginPrem.html";return false;}if(x.user.role&&x.user.role!=="student"){location.href="/teacher-dashboard.html";return false;}state.user=x.user;document.querySelectorAll("[data-user-name]").forEach(e=>e.textContent=x.user.fullname||"Student");return true;}
+async function load(){state.exams=await api("/api/student/exams");state.results=(await api("/api/student/results")).results||[];state.dashboard=await api("/api/student/dashboard");render();}
+function goExam(id){location.href=`/exam.html?id=${encodeURIComponent(id)}`;}
+async function logout(){await fetch("/api/logout",{method:"POST",credentials:"include"}).catch(()=>{});location.href="/loginPrem.html";}
+async function startRealtime(){await load();setInterval(load,5000);}
+
+function render(){const g=document.getElementById("grid");const a=state.results||[];g.innerHTML=a.length?a.map(x=>`<article class="portal-card"><h2>${esc(x.examTitle)}</h2><p>${esc(x.subject)} • ${esc(x.code)}</p><div class="meta"><div><span>Date</span><strong>${d(x.submittedAt)}</strong></div><div><span>Score</span><strong>${x.score}/${x.totalMarks}</strong></div><div><span>Percentage</span><strong>${x.percentage}%</strong></div></div><p class="portal-note">${x.questionCount} Questions • ${x.autoSubmitted?"Auto-submitted":"Submitted normally"}</p><div class="portal-row" style="margin-top:16px"><button class="portal-action primary" onclick="location.href='/result.html?id=${encodeURIComponent(x.id)}'">View Result</button></div></article>`).join(""):`<div class="portal-empty">No completed exams yet.<br>Submitted exams will appear here automatically.</div>`;}
+document.addEventListener("DOMContentLoaded",async()=>{if(await auth())startRealtime().catch(e=>document.getElementById("grid").innerHTML=`<div class="portal-empty">${esc(e.message)}</div>`);});
