@@ -747,16 +747,41 @@
 </label>
 
 <label>
+
     Exam Session End Date & Time
+
     <input
         id="examSessionEndsAt"
         type="datetime-local"
         required
     >
+
     <small>
         After this time, no student can continue the exam.
     </small>
+
 </label>
+
+
+<label class="full-width">
+
+    Target Class / Semester / Section
+
+    <select id="examClassGroup" required>
+
+        <option value="">
+            Select Class / Semester / Section
+        </option>
+
+    </select>
+
+    <small>
+        Only students in the selected class, semester and section can see this exam.
+    </small>
+
+</label>
+
+
                         </div>
 
                         <div class="question-editor-header">

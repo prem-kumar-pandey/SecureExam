@@ -17,6 +17,18 @@ const peerConnections =
 const pendingCandidates =
     new Map();
 
+    let teacherVoiceStream = null;
+
+let teacherVoicePeerConnection = null;
+
+let teacherVoicePendingCandidates = [];
+
+let speakingAttemptId = null;
+
+let speakingTargetSocketId = null;
+
+
+
 
 const WEBRTC_CONFIG = {
 
@@ -445,6 +457,14 @@ function renderStudentCard(
                         Listen
                     </button>
 
+                    <button
+    type="button"
+    data-speak
+>
+    <i class="fa-solid fa-microphone"></i>
+    Speak
+</button>
+
                 </div>
 
             </div>
@@ -520,6 +540,56 @@ function renderStudentCard(
             );
 
     }
+
+
+    card.querySelector(
+    "[data-speak]"
+)
+    .addEventListener(
+        "click",
+        async event => {
+
+            const button =
+                event.currentTarget;
+
+            if (
+                String(
+                    speakingAttemptId
+                ) ===
+                String(key)
+            ) {
+
+                stopTeacherVoice();
+
+                return;
+
+            }
+
+            try {
+
+                await startTeacherVoice(
+                    key,
+                    button
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Teacher voice:",
+                    error
+                );
+
+                stopTeacherVoice();
+
+                alert(
+                    error.message ||
+                    "Could not start the teacher microphone."
+                );
+
+            }
+
+        }
+    );
 
 
     const current =
@@ -856,6 +926,332 @@ function listenToStudent(
         );
 
     }
+
+}
+
+
+
+/* =========================================================
+   TEACHER VOICE
+========================================================= */
+
+function findStudentSocketId(
+    attemptId
+) {
+
+    const student =
+        students.get(
+            String(attemptId)
+        );
+
+    if (
+        student?.socketId
+    ) {
+
+        return student.socketId;
+
+    }
+
+
+    for (
+        const [
+            socketId,
+            peer
+        ]
+        of peerConnections.entries()
+    ) {
+
+        if (
+            String(
+                peer.attemptId
+            ) ===
+            String(
+                attemptId
+            )
+        ) {
+
+            return socketId;
+
+        }
+
+    }
+
+    return null;
+
+}
+
+
+function resetSpeakButtons() {
+
+    document
+        .querySelectorAll(
+            "[data-speak]"
+        )
+        .forEach(
+            button => {
+
+                button.innerHTML =
+                    `
+                    <i class="fa-solid fa-microphone"></i>
+                    Speak
+                    `;
+
+                button.classList.remove(
+                    "listen-active"
+                );
+
+            }
+        );
+
+}
+
+
+async function startTeacherVoice(
+    attemptId,
+    button
+) {
+
+    const targetSocketId =
+        findStudentSocketId(
+            attemptId
+        );
+
+    if (!targetSocketId) {
+
+        throw new Error(
+            "Student connection is not ready. Wait a moment and try again."
+        );
+
+    }
+
+
+    stopTeacherVoice();
+
+
+    teacherVoiceStream =
+        await navigator.mediaDevices
+            .getUserMedia({
+                audio: true,
+                video: false
+            });
+
+
+    teacherVoicePendingCandidates =
+        [];
+
+
+    teacherVoicePeerConnection =
+        new RTCPeerConnection(
+            WEBRTC_CONFIG
+        );
+
+
+    teacherVoiceStream
+        .getAudioTracks()
+        .forEach(
+            track => {
+
+                teacherVoicePeerConnection
+                    .addTrack(
+                        track,
+                        teacherVoiceStream
+                    );
+
+            }
+        );
+
+
+    speakingAttemptId =
+        String(attemptId);
+
+    speakingTargetSocketId =
+        targetSocketId;
+
+
+    teacherVoicePeerConnection
+        .onicecandidate =
+        event => {
+
+            if (
+                event.candidate &&
+                monitorSocket
+            ) {
+
+                monitorSocket.emit(
+                    "teacher:voice-ice",
+                    {
+                        targetSocketId,
+
+                        candidate:
+                            event.candidate
+                    }
+                );
+
+            }
+
+        };
+
+
+    teacherVoicePeerConnection
+        .onconnectionstatechange =
+        () => {
+
+            const state =
+                teacherVoicePeerConnection
+                    ?.connectionState;
+
+            if (
+                state === "failed" ||
+                state === "closed"
+            ) {
+
+                stopTeacherVoice();
+
+            }
+
+        };
+
+
+    const offer =
+        await teacherVoicePeerConnection
+            .createOffer();
+
+
+    await teacherVoicePeerConnection
+        .setLocalDescription(
+            offer
+        );
+
+
+    monitorSocket.emit(
+        "teacher:voice-offer",
+        {
+            targetSocketId,
+
+            offer
+        }
+    );
+
+
+    resetSpeakButtons();
+
+    if (button) {
+
+        button.innerHTML =
+            `
+            <i class="fa-solid fa-microphone-slash"></i>
+            Stop Speaking
+            `;
+
+        button.classList.add(
+            "listen-active"
+        );
+
+    }
+
+}
+
+
+async function flushTeacherVoiceCandidates() {
+
+    if (
+        !teacherVoicePeerConnection ||
+        !teacherVoicePeerConnection
+            .remoteDescription
+    ) {
+        return;
+    }
+
+
+    const candidates =
+        teacherVoicePendingCandidates
+            .splice(0);
+
+
+    for (
+        const candidate
+        of candidates
+    ) {
+
+        try {
+
+            await teacherVoicePeerConnection
+                .addIceCandidate(
+                    candidate
+                );
+
+        } catch (error) {
+
+            console.warn(
+                "Teacher voice queued ICE:",
+                error
+            );
+
+        }
+
+    }
+
+}
+
+
+function stopTeacherVoice() {
+
+    if (
+        monitorSocket &&
+        speakingTargetSocketId
+    ) {
+
+        monitorSocket.emit(
+            "teacher:voice-stop",
+            {
+                targetSocketId:
+                    speakingTargetSocketId
+            }
+        );
+
+    }
+
+
+    if (teacherVoiceStream) {
+
+        teacherVoiceStream
+            .getTracks()
+            .forEach(
+                track => track.stop()
+            );
+
+    }
+
+    teacherVoiceStream =
+        null;
+
+
+    if (
+        teacherVoicePeerConnection
+    ) {
+
+        try {
+
+            teacherVoicePeerConnection
+                .close();
+
+        } catch (error) {}
+
+    }
+
+    teacherVoicePeerConnection =
+        null;
+
+    teacherVoicePendingCandidates =
+        [];
+
+    speakingAttemptId =
+        null;
+
+    speakingTargetSocketId =
+        null;
+
+    resetSpeakButtons();
 
 }
 
@@ -1253,6 +1649,18 @@ function connectMonitorSocket() {
                 );
 
 
+                if (
+    String(
+        speakingAttemptId
+    ) ===
+    String(key)
+) {
+
+    stopTeacherVoice();
+
+}
+
+
             const current =
                 students.get(
                     key
@@ -1287,6 +1695,92 @@ function connectMonitorSocket() {
     );
 
 
+            // =========================================
+        // TEACHER VOICE ANSWER
+        // =========================================
+
+        monitorSocket.on(
+            "teacher:voice-answer",
+            async ({
+                answer
+            }) => {
+
+                if (
+                    !teacherVoicePeerConnection ||
+                    !answer
+                ) {
+                    return;
+                }
+
+                try {
+
+                    await teacherVoicePeerConnection
+                        .setRemoteDescription(
+                            answer
+                        );
+
+                    await flushTeacherVoiceCandidates();
+
+                } catch (error) {
+
+                    console.error(
+                        "Teacher voice answer:",
+                        error
+                    );
+
+                }
+
+            }
+        );
+
+
+        // =========================================
+        // TEACHER VOICE ICE
+        // =========================================
+
+        monitorSocket.on(
+            "teacher:voice-ice",
+            async ({
+                candidate
+            }) => {
+
+                if (!candidate) {
+                    return;
+                }
+
+                if (
+                    teacherVoicePeerConnection &&
+                    teacherVoicePeerConnection
+                        .remoteDescription
+                ) {
+
+                    try {
+
+                        await teacherVoicePeerConnection
+                            .addIceCandidate(
+                                candidate
+                            );
+
+                    } catch (error) {
+
+                        console.warn(
+                            "Teacher voice ICE:",
+                            error
+                        );
+
+                    }
+
+                } else {
+
+                    teacherVoicePendingCandidates
+                        .push(candidate);
+
+                }
+
+            }
+        );
+
+
     monitorSocket.on(
         "webrtc:offer",
         async ({
@@ -1295,25 +1789,42 @@ function connectMonitorSocket() {
             studentId
         }) => {
 
+
+
             const matching =
-                Array.from(
-                    students.values()
-                ).find(
-                    student =>
-                        String(
-                            student.studentId
-                        ) ===
-                        String(
-                            studentId
-                        )
-                );
+    Array.from(
+        students.values()
+    ).find(
+        student =>
+            String(
+                student.studentId
+            ) ===
+            String(
+                studentId
+            )
+    );
 
+if (matching) {
 
-            await handleOffer(
-                fromSocketId,
-                offer,
-                matching
-            );
+    matching.socketId =
+        fromSocketId;
+
+    students.set(
+        String(
+            matching.attemptId
+        ),
+        matching
+    );
+
+}
+
+await handleOffer(
+    fromSocketId,
+    offer,
+    matching
+);
+
+            
 
         }
     );
@@ -1442,16 +1953,17 @@ function connectMonitorSocket() {
 
 
     monitorSocket.on(
-        "disconnect",
-        () => {
+    "disconnect",
+    () => {
 
-            console.warn(
-                "Teacher monitor socket disconnected."
-            );
+        console.warn(
+            "Teacher monitor socket disconnected."
+        );
 
-        }
-    );
+        stopTeacherVoice();
 
+    }
+);
 }
 
 

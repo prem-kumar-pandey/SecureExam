@@ -474,6 +474,10 @@ body::after {
     font-weight: 700;
 }
 
+.portal-form label[hidden] {
+    display: none !important;
+}
+
 .portal-form input,
 .portal-form select,
 .portal-form textarea {

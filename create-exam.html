@@ -171,4 +171,170 @@
                 <span>Logout</span>
             </button>
 
-        </aside><main class="main-content"><div class="portal-page"><div class="portal-top"><div><span class="welcome-small">EXAM MANAGEMENT</span><h1>Create Exam</h1><p>Create and publish a real exam for your students.</p></div><span class="portal-live">LIVE DATA</span></div><section class="portal-card"><form id="createForm" class="portal-form"><div class="portal-grid"><label>Title<input id="title" required></label><label>Subject<input id="subject" required></label><label>Course / Exam Code<input id="code" required></label><label>Duration (minutes)<input id="duration" type="number" min="1" value="30" required></label><label>Total Marks<input id="totalMarks" type="number" min="1" value="10" required></label><label>Status<select id="status"><option value="published">Publish Now</option><option value="draft">Save as Draft</option></select></label><label>Start Date & Time<input id="scheduledAt" type="datetime-local"></label><label>Available For<select id="availabilityDays"><option value="1">1 Day</option><option value="2">2 Days</option><option value="3">3 Days</option><option value="5">5 Days</option><option value="7" selected>7 Days</option><option value="10">10 Days</option><option value="15">15 Days</option><option value="30">30 Days</option></select></label></div><div><h2>Questions</h2><p class="portal-note">Each question needs four options and one correct answer.</p></div><div id="questions"></div><div class="portal-row"><button type="button" class="portal-action" onclick="addQuestion()">Add Question</button><button type="submit" class="portal-action primary">Create Exam</button></div><div id="message" class="portal-note"></div></form></section></div></main></div><script src="portal-pages.js"></script><script src="create-exam.js"></script></body></html>
+        </aside><main class="main-content"><div class="portal-page"><div class="portal-top"><div><span class="welcome-small">EXAM MANAGEMENT</span><h1>Create Exam</h1><p>Create and publish a real exam for your students.</p></div><span class="portal-live">LIVE DATA</span></div><section class="portal-card"><form id="createForm" class="portal-form"><div class="portal-grid"><label>Title<input id="title" required></label><label>Subject<input id="subject" required></label><label>Course / Exam Code<input id="code" required></label><label>Duration (minutes)<input id="duration" type="number" min="1" value="30" required></label><label>Total Marks<input id="totalMarks" type="number" min="1" value="10" required></label><label>Status<select id="status"><option value="published">Publish Now</option><option value="draft">Save as Draft</option></select></label><label>Start Date & Time<input id="scheduledAt" type="datetime-local"></label>
+        <label>
+    Institution Type
+
+    <select
+        id="examInstitutionType"
+        required
+    >
+        <option value="">
+            Select Institution Type
+        </option>
+
+        <option value="school">
+            School
+        </option>
+
+        <option value="college">
+            College / University
+        </option>
+    </select>
+</label>
+
+
+<label>
+    Institution Name
+
+    <input
+        id="examInstitutionName"
+        type="text"
+        placeholder="Enter School / College / University"
+        required
+    >
+</label>
+
+
+<label
+    id="examSchoolClassLabel"
+    hidden
+>
+    Class
+
+    <select id="examSchoolClass">
+
+        <option value="">
+            Select Class
+        </option>
+
+        <option value="1">Class 1</option>
+        <option value="2">Class 2</option>
+        <option value="3">Class 3</option>
+        <option value="4">Class 4</option>
+        <option value="5">Class 5</option>
+        <option value="6">Class 6</option>
+        <option value="7">Class 7</option>
+        <option value="8">Class 8</option>
+        <option value="9">Class 9</option>
+        <option value="10">Class 10</option>
+        <option value="11">Class 11</option>
+        <option value="12">Class 12</option>
+
+    </select>
+</label>
+
+
+<label
+    id="examSchoolSectionLabel"
+    hidden
+>
+    Section
+
+    <select id="examSchoolSection">
+
+        <option value="">
+            Select Section
+        </option>
+
+        <option value="A">Section A</option>
+        <option value="B">Section B</option>
+        <option value="C">Section C</option>
+        <option value="D">Section D</option>
+
+    </select>
+</label>
+
+
+<label
+    id="examSemesterLabel"
+    hidden
+>
+    Semester
+
+    <select id="examSemester">
+
+        <option value="">
+            Select Semester
+        </option>
+
+        <option value="1">
+            1st Semester
+        </option>
+
+        <option value="2">
+            2nd Semester
+        </option>
+
+        <option value="3">
+            3rd Semester
+        </option>
+
+        <option value="4">
+            4th Semester
+        </option>
+
+        <option value="5">
+            5th Semester
+        </option>
+
+        <option value="6">
+            6th Semester
+        </option>
+
+        <option value="7">
+            7th Semester
+        </option>
+
+        <option value="8">
+            8th Semester
+        </option>
+
+    </select>
+</label>
+
+
+<label
+    id="examCourseLabel"
+    hidden
+>
+    Course / Branch
+
+    <input
+        id="examCourse"
+        type="text"
+        placeholder="CSE, ECE, BCA..."
+    >
+</label>
+
+
+<label
+    id="examCollegeSectionLabel"
+    hidden
+>
+    Section
+
+    <select id="examCollegeSection">
+
+        <option value="">
+            Select Section
+        </option>
+
+        <option value="A">Section A</option>
+        <option value="B">Section B</option>
+        <option value="C">Section C</option>
+        <option value="D">Section D</option>
+
+    </select>
+</label>
+</div><div><h2>Questions</h2><p class="portal-note">Each question needs four options and one correct answer.</p></div><div id="questions"></div><div class="portal-row"><button type="button" class="portal-action" onclick="addQuestion()">Add Question</button><button type="submit" class="portal-action primary">Create Exam</button></div><div id="message" class="portal-note"></div></form></section></div></main></div><script src="portal-pages.js"></script><script src="create-exam.js"></script></body></html>

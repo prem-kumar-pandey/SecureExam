@@ -21,6 +21,10 @@ function toggleForm(formType) {
 
         signupBox.classList.remove("hidden");
 
+        // Show the correct institution fields
+        // when Signup opens
+        updateInstitutionFields();
+
     } else {
 
         signupBox.classList.add("hidden");
@@ -209,10 +213,10 @@ async function login() {
     try {
 
         const response =
-            await fetch(
-                `${API_URL}/api/login`,
-                {
-                    method: "POST",
+    await fetch(
+        `${API_URL}/api/login`,
+        {
+            method: "POST",
 
                     headers: {
                         "Content-Type":
@@ -315,9 +319,76 @@ async function login() {
 }
 
 
+
+// =========================================
+// INSTITUTION TYPE CHANGE
+// =========================================
+
+function updateInstitutionFields() {
+
+    const type =
+        document.getElementById("institutionType").value;
+
+    const schoolFields =
+        document.getElementById("schoolFields");
+
+    const collegeFields =
+        document.getElementById("collegeFields");
+
+    const schoolClass =
+        document.getElementById("schoolClass");
+
+    const schoolSection =
+        document.getElementById("schoolSection");
+
+    const collegeYear =
+        document.getElementById("collegeYear");
+
+    const collegeCourse =
+        document.getElementById("collegeCourse");
+
+    const collegeSection =
+        document.getElementById("collegeSection");
+
+
+    schoolFields.classList.add("hidden");
+    collegeFields.classList.add("hidden");
+
+
+    schoolClass.required = false;
+    schoolSection.required = false;
+
+    collegeYear.required = false;
+    collegeCourse.required = false;
+    collegeSection.required = false;
+
+
+    if (type === "school") {
+
+        schoolFields.classList.remove("hidden");
+
+        schoolClass.required = true;
+        schoolSection.required = true;
+
+    }
+
+
+    if (type === "college") {
+
+        collegeFields.classList.remove("hidden");
+
+        collegeYear.required = true;
+        collegeCourse.required = true;
+        collegeSection.required = true;
+
+    }
+
+}
+
 // =========================================
 // REGISTER
 // =========================================
+
 
 async function register() {
 
@@ -327,13 +398,11 @@ async function register() {
             .value
             .trim();
 
-
     const email =
         document
             .getElementById("email")
             .value
             .trim();
-
 
     const username =
         document
@@ -341,24 +410,62 @@ async function register() {
             .value
             .trim();
 
-
     const password =
         document
             .getElementById("new-password")
             .value
             .trim();
 
-
     const confirmPassword =
         document
-            .getElementById(
-                "confirm-password"
-            )
+            .getElementById("confirm-password")
             .value
             .trim();
 
 
-    // FULL NAME
+    const institutionType =
+        document
+            .getElementById("institutionType")
+            .value;
+
+    const institutionName =
+        document
+            .getElementById("institutionName")
+            .value
+            .trim();
+
+
+    const schoolClass =
+        document
+            .getElementById("schoolClass")
+            .value;
+
+    const schoolSection =
+        document
+            .getElementById("schoolSection")
+            .value;
+
+
+    const collegeYear =
+        document
+            .getElementById("collegeYear")
+            .value;
+
+    const collegeCourse =
+        document
+            .getElementById("collegeCourse")
+            .value
+            .trim();
+
+    const collegeSection =
+        document
+            .getElementById("collegeSection")
+            .value;
+
+
+    // =========================================
+    // BASIC VALIDATION
+    // =========================================
 
     if (fullname.length < 3) {
 
@@ -371,8 +478,6 @@ async function register() {
         return;
     }
 
-
-    // GMAIL VALIDATION
 
     const gmailPattern =
         /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
@@ -389,8 +494,6 @@ async function register() {
     }
 
 
-    // USERNAME
-
     if (username.length < 3) {
 
         showMessage(
@@ -402,8 +505,6 @@ async function register() {
         return;
     }
 
-
-    // PASSWORD
 
     if (password.length < 6) {
 
@@ -417,12 +518,7 @@ async function register() {
     }
 
 
-    // CONFIRM PASSWORD
-
-    if (
-        password !==
-        confirmPassword
-    ) {
+    if (password !== confirmPassword) {
 
         showMessage(
             "signup-message",
@@ -431,6 +527,70 @@ async function register() {
         );
 
         return;
+    }
+
+
+    // =========================================
+    // INSTITUTION VALIDATION
+    // =========================================
+
+    if (!institutionType) {
+
+        showMessage(
+            "signup-message",
+            "Please select School or College / University.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (!institutionName) {
+
+        showMessage(
+            "signup-message",
+            "Please enter your institution name.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (institutionType === "school") {
+
+        if (!schoolClass || !schoolSection) {
+
+            showMessage(
+                "signup-message",
+                "Please select your class and section.",
+                "error"
+            );
+
+            return;
+        }
+
+    }
+
+
+    if (institutionType === "college") {
+
+        if (
+            !collegeYear ||
+            !collegeCourse ||
+            !collegeSection
+        ) {
+
+            showMessage(
+                "signup-message",
+                "Please enter your college Semester, course and section.",
+                "error"
+            );
+
+            return;
+        }
+
     }
 
 
@@ -456,23 +616,38 @@ async function register() {
                     body:
                         JSON.stringify({
 
-                            fullname:
-                                fullname,
-
-                            email:
-                                email,
-
-                            username:
-                                username,
-
-                            password:
-                                password,
-
-                            confirmPassword:
-                                confirmPassword,
+                            fullname,
+                            email,
+                            username,
+                            password,
+                            confirmPassword,
 
                             role:
-                                selectedRole
+                                selectedRole,
+
+                            institutionType,
+
+                            institutionName,
+
+                            schoolClass:
+                                institutionType === "school"
+                                    ? schoolClass
+                                    : "",
+
+                            year:
+                                institutionType === "college"
+                                    ? collegeYear
+                                    : "",
+
+                            course:
+                                institutionType === "college"
+                                    ? collegeCourse
+                                    : "",
+
+                            section:
+                                institutionType === "school"
+                                    ? schoolSection
+                                    : collegeSection
                         })
                 }
             );
@@ -494,21 +669,16 @@ async function register() {
             setTimeout(
                 function () {
 
-                    toggleForm(
-                        "login"
-                    );
+                    toggleForm("login");
 
                     document
-                        .getElementById(
-                            "username"
-                        )
+                        .getElementById("username")
                         .value =
                         username;
 
                 },
                 1200
             );
-
 
         } else {
 
@@ -518,6 +688,7 @@ async function register() {
                     "Registration failed!",
                 "error"
             );
+
         }
 
     } catch (error) {
@@ -529,8 +700,11 @@ async function register() {
             "Cannot connect to backend server!",
             "error"
         );
+
     }
 }
+
+
 
 
 // =========================================
@@ -579,7 +753,7 @@ async function startSocialLogin(
 
 
     window.location.href =
-        `${API_URL}/auth/${provider}`;
+    `${API_URL}/auth/${provider}`;
 }
 
 
@@ -832,3 +1006,21 @@ window.addEventListener(
 
     }
 );
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const institutionType =
+        document.getElementById("institutionType");
+
+    if (institutionType) {
+
+        institutionType.addEventListener(
+            "change",
+            updateInstitutionFields
+        );
+
+    }
+
+});

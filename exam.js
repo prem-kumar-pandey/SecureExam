@@ -16,6 +16,14 @@ let studentPeerConnection = null;
 
 let pendingIceCandidates = [];
 
+let teacherVoicePeerConnection = null;
+
+let teacherVoicePendingIceCandidates = [];
+
+let teacherVoiceAudioContext = null;
+
+let teacherVoiceAudioSource = null;
+
 let heartbeatHandle = null;
 
 
@@ -580,6 +588,8 @@ async function submitExam(
 stopHeartbeat();
 
 closeStudentPeer();
+
+closeTeacherVoicePeer();
 
 if (
     proctoringSocket
@@ -1405,6 +1415,46 @@ function setupRestrictions() {
 }
 
 
+async function prepareTeacherVoiceAudio() {
+
+    try {
+
+        const AudioContextClass =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+        if (!AudioContextClass) {
+            return;
+        }
+
+        if (!teacherVoiceAudioContext) {
+
+            teacherVoiceAudioContext =
+                new AudioContextClass();
+
+        }
+
+        if (
+            teacherVoiceAudioContext.state ===
+            "suspended"
+        ) {
+
+            await teacherVoiceAudioContext.resume();
+
+        }
+
+    } catch (error) {
+
+        console.warn(
+            "Teacher voice audio setup:",
+            error
+        );
+
+    }
+
+}
+
+
 /* =========================================================
    START SECURE EXAM
    ========================================================= */
@@ -1490,7 +1540,9 @@ async function startSecureExam() {
         }
 
 
-        await startCamera();
+        await prepareTeacherVoiceAudio();
+
+await startCamera();
 
 
         /*
@@ -1954,16 +2006,97 @@ function startProctoringConnection() {
 
 
     proctoringSocket.on(
-        "teacher:left",
-        () => {
+    "teacher:left",
+    () => {
 
-            teacherSocketId =
-                null;
+        teacherSocketId = null;
 
-            closeStudentPeer();
+        closeStudentPeer();
+
+        closeTeacherVoicePeer();
+
+    }
+);
+
+
+proctoringSocket.on(
+    "teacher:voice-offer",
+    async ({
+        fromSocketId,
+        offer
+    }) => {
+
+        try {
+
+            await handleTeacherVoiceOffer(
+                fromSocketId,
+                offer
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Teacher voice offer error:",
+                error
+            );
 
         }
-    );
+
+    }
+);
+
+
+proctoringSocket.on(
+    "teacher:voice-ice",
+    async ({
+        candidate
+    }) => {
+
+        if (!candidate) {
+            return;
+        }
+
+        try {
+
+            if (
+                teacherVoicePeerConnection &&
+                teacherVoicePeerConnection
+                    .remoteDescription
+            ) {
+
+                await teacherVoicePeerConnection
+                    .addIceCandidate(
+                        candidate
+                    );
+
+            } else {
+
+                teacherVoicePendingIceCandidates
+                    .push(candidate);
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Teacher voice ICE error:",
+                error
+            );
+
+        }
+
+    }
+);
+
+
+proctoringSocket.on(
+    "teacher:voice-stop",
+    () => {
+
+        closeTeacherVoicePeer();
+
+    }
+);
 
 
     proctoringSocket.on(
@@ -1989,6 +2122,312 @@ function startProctoringConnection() {
 
             stopHeartbeat();
 
+        }
+    );
+
+}
+
+
+
+/* =========================================================
+   TEACHER VOICE PEER
+========================================================= */
+
+function closeTeacherVoicePeer() {
+
+    if (teacherVoicePeerConnection) {
+
+        try {
+
+            teacherVoicePeerConnection.close();
+
+        } catch (error) {
+
+            console.error(
+                error
+            );
+
+        }
+
+    }
+
+    teacherVoicePeerConnection =
+        null;
+
+    teacherVoicePendingIceCandidates =
+        [];
+
+    if (teacherVoiceAudioSource) {
+
+        try {
+
+            teacherVoiceAudioSource.disconnect();
+
+        } catch (error) {}
+
+    }
+
+    teacherVoiceAudioSource =
+        null;
+
+    const audio =
+        document.getElementById(
+            "teacherVoiceAudio"
+        );
+
+    if (audio) {
+
+        try {
+
+            audio.pause();
+
+        } catch (error) {}
+
+        audio.srcObject =
+            null;
+
+    }
+
+}
+
+
+function getTeacherVoiceAudioElement() {
+
+    let audio =
+        document.getElementById(
+            "teacherVoiceAudio"
+        );
+
+    if (!audio) {
+
+        audio =
+            document.createElement(
+                "audio"
+            );
+
+        audio.id =
+            "teacherVoiceAudio";
+
+        audio.autoplay =
+            true;
+
+        audio.playsInline =
+            true;
+
+        audio.style.display =
+            "none";
+
+        document.body.appendChild(
+            audio
+        );
+
+    }
+
+    return audio;
+
+}
+
+
+async function handleTeacherVoiceOffer(
+    fromSocketId,
+    offer
+) {
+
+    if (
+        !secureModeStarted ||
+        !proctoringSocket ||
+        !offer
+    ) {
+        return;
+    }
+
+    closeTeacherVoicePeer();
+
+    teacherVoicePendingIceCandidates =
+        [];
+
+    teacherVoicePeerConnection =
+        new RTCPeerConnection(
+            WEBRTC_CONFIG
+        );
+
+
+    teacherVoicePeerConnection.ontrack =
+        event => {
+
+            const stream =
+                event.streams &&
+                event.streams[0]
+                    ? event.streams[0]
+                    : new MediaStream([
+                        event.track
+                    ]);
+
+
+            if (
+                teacherVoiceAudioContext
+            ) {
+
+                if (
+                    teacherVoiceAudioContext
+                        .state ===
+                    "suspended"
+                ) {
+
+                    teacherVoiceAudioContext
+                        .resume()
+                        .catch(
+                            console.warn
+                        );
+
+                }
+
+                if (
+                    teacherVoiceAudioSource
+                ) {
+
+                    try {
+
+                        teacherVoiceAudioSource
+                            .disconnect();
+
+                    } catch (error) {}
+
+                }
+
+                teacherVoiceAudioSource =
+                    teacherVoiceAudioContext
+                        .createMediaStreamSource(
+                            stream
+                        );
+
+                teacherVoiceAudioSource
+                    .connect(
+                        teacherVoiceAudioContext
+                            .destination
+                    );
+
+            } else {
+
+                const audio =
+                    getTeacherVoiceAudioElement();
+
+                audio.srcObject =
+                    stream;
+
+                audio.play().catch(
+                    error => {
+
+                        console.warn(
+                            "Teacher voice playback:",
+                            error
+                        );
+
+                    }
+                );
+
+            }
+
+        };
+
+
+    teacherVoicePeerConnection.onicecandidate =
+        event => {
+
+            if (
+                event.candidate &&
+                proctoringSocket
+            ) {
+
+                proctoringSocket.emit(
+                    "teacher:voice-ice",
+                    {
+                        targetSocketId:
+                            fromSocketId,
+
+                        candidate:
+                            event.candidate
+                    }
+                );
+
+            }
+
+        };
+
+
+    teacherVoicePeerConnection
+        .onconnectionstatechange =
+        () => {
+
+            const state =
+                teacherVoicePeerConnection
+                    ?.connectionState;
+
+            if (
+                state === "failed" ||
+                state === "closed"
+            ) {
+
+                closeTeacherVoicePeer();
+
+            }
+
+        };
+
+
+    await teacherVoicePeerConnection
+        .setRemoteDescription(
+            offer
+        );
+
+
+    const queued =
+        teacherVoicePendingIceCandidates
+            .splice(0);
+
+
+    for (
+        const candidate
+        of queued
+    ) {
+
+        try {
+
+            await teacherVoicePeerConnection
+                .addIceCandidate(
+                    candidate
+                );
+
+        } catch (error) {
+
+            console.warn(
+                "Teacher voice queued ICE:",
+                error
+            );
+
+        }
+
+    }
+
+
+    const answer =
+        await teacherVoicePeerConnection
+            .createAnswer();
+
+
+    await teacherVoicePeerConnection
+        .setLocalDescription(
+            answer
+        );
+
+
+    proctoringSocket.emit(
+        "teacher:voice-answer",
+        {
+            targetSocketId:
+                fromSocketId,
+
+            answer
         }
     );
 

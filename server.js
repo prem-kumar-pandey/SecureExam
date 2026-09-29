@@ -134,6 +134,75 @@ mongoose
 
 
 
+
+    // ===============================
+// CLASS GROUP SCHEMA
+// ===============================
+
+const classGroupSchema =
+    new mongoose.Schema(
+        {
+
+            institutionType: {
+                type: String,
+                enum: ["school", "college"],
+                required: true
+            },
+
+            institutionName: {
+                type: String,
+                required: true,
+                trim: true
+            },
+
+            schoolClass: {
+                type: String,
+                default: ""
+            },
+
+            year: {
+                type: String,
+                default: ""
+            },
+
+            course: {
+                type: String,
+                default: ""
+            },
+
+            section: {
+                type: String,
+                required: true,
+                trim: true
+            },
+
+            groupKey: {
+                type: String,
+                required: true,
+                unique: true,
+                index: true
+            },
+
+            label: {
+                type: String,
+                required: true
+            }
+
+        },
+        {
+            timestamps: true
+        }
+    );
+
+
+const ClassGroup =
+    mongoose.model(
+        "ClassGroup",
+        classGroupSchema
+    );
+
+
+
 // ===============================
 // USER SCHEMA
 // ===============================
@@ -223,7 +292,12 @@ const userSchema =
 
             default: undefined
 
-        }
+        },
+        classGroupId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "ClassGroup",
+    default: null
+}
 
     });
 
@@ -573,10 +647,6 @@ passport.use(
 // REGISTER
 // ===============================
 
-// ===============================
-// REGISTER
-// ===============================
-
 app.post("/api/register", async (req, res) => {
 
     try {
@@ -587,20 +657,26 @@ app.post("/api/register", async (req, res) => {
             username,
             password,
             confirmPassword,
-            role
+            role,
+
+            institutionType,
+            institutionName,
+
+            schoolClass,
+            year,
+            course,
+            section
         } = req.body;
 
 
-        // ===============================
-        // ROLE VALIDATION
-        // ===============================
-
         const selectedRole =
-            role === "teacher" ? "teacher" : "student";
+    role === "teacher"
+        ? "teacher"
+        : "student";
 
-        // ===============================
+        // =========================================
         // BASIC VALIDATION
-        // ===============================
+        // =========================================
 
         if (
             !fullname ||
@@ -611,20 +687,91 @@ app.post("/api/register", async (req, res) => {
         ) {
 
             return res.status(400).json({
-                message: "Please fill in all fields."
+                message:
+                    "Please fill in all account fields."
             });
 
         }
 
 
-        // ===============================
-        // GMAIL VALIDATION
-        // ===============================
+        // =========================================
+        // INSTITUTION VALIDATION
+        // =========================================
+
+        if (
+            !["school", "college"]
+                .includes(institutionType)
+        ) {
+
+            return res.status(400).json({
+                message:
+                    "Please select a valid institution type."
+            });
+
+        }
+
+
+        if (!String(institutionName || "").trim()) {
+
+            return res.status(400).json({
+                message:
+                    "Institution name is required."
+            });
+
+        }
+
+
+        if (!String(section || "").trim()) {
+
+            return res.status(400).json({
+                message:
+                    "Section is required."
+            });
+
+        }
+
+
+        if (
+            institutionType === "school" &&
+            !String(schoolClass || "").trim()
+        ) {
+
+            return res.status(400).json({
+                message:
+                    "School class is required."
+            });
+
+        }
+
+
+        if (
+            institutionType === "college" &&
+            (
+                !String(year || "").trim() ||
+                !String(course || "").trim()
+            )
+        ) {
+
+            return res.status(400).json({
+                message:
+                    "College year and course are required."
+            });
+
+        }
+
+
+        // =========================================
+        // EMAIL
+        // =========================================
 
         const gmailPattern =
             /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
 
-        if (!gmailPattern.test(email.trim())) {
+        if (
+            !gmailPattern.test(
+                email.trim()
+            )
+        ) {
 
             return res.status(400).json({
                 message:
@@ -634,22 +781,22 @@ app.post("/api/register", async (req, res) => {
         }
 
 
-        // ===============================
-        // PASSWORD MATCH
-        // ===============================
+        // =========================================
+        // PASSWORD
+        // =========================================
 
-        if (password !== confirmPassword) {
+        if (
+            password !==
+            confirmPassword
+        ) {
 
             return res.status(400).json({
-                message: "Passwords do not match."
+                message:
+                    "Passwords do not match."
             });
 
         }
 
-
-        // ===============================
-        // PASSWORD LENGTH
-        // ===============================
 
         if (password.length < 6) {
 
@@ -661,31 +808,32 @@ app.post("/api/register", async (req, res) => {
         }
 
 
-        // ===============================
-        // CHECK EXISTING USERNAME
-        // ===============================
+        // =========================================
+        // DUPLICATE ACCOUNT
+        // =========================================
 
         const existingUsername =
             await User.findOne({
-                username: username.trim()
+                username:
+                    username.trim()
             });
 
         if (existingUsername) {
 
             return res.status(400).json({
-                message: "Username already exists."
+                message:
+                    "Username already exists."
             });
 
         }
 
 
-        // ===============================
-        // CHECK EXISTING EMAIL
-        // ===============================
-
         const existingEmail =
             await User.findOne({
-                email: email.trim().toLowerCase()
+                email:
+                    email
+                        .trim()
+                        .toLowerCase()
             });
 
         if (existingEmail) {
@@ -698,17 +846,186 @@ app.post("/api/register", async (req, res) => {
         }
 
 
-        // ===============================
+        // =========================================
+        // NORMALIZE GROUP VALUES
+        // =========================================
+
+        const normalizedInstitution =
+            institutionName
+                .trim()
+                .replace(/\s+/g, " ");
+
+        const normalizedClass =
+            institutionType === "school"
+                ? String(schoolClass || "").trim()
+                : "";
+
+        const normalizedYear =
+            institutionType === "college"
+                ? String(year || "").trim()
+                : "";
+
+        const normalizedCourse =
+            institutionType === "college"
+                ? String(course || "")
+                    .trim()
+                    .replace(/\s+/g, " ")
+                    .toUpperCase()
+                : "";
+
+        const normalizedSection =
+            String(section)
+                .trim()
+                .toUpperCase();
+
+
+        // =========================================
+        // UNIQUE CLASS GROUP KEY
+        // =========================================
+
+        const groupKey = [
+
+            institutionType,
+
+            normalizedInstitution
+                .toLowerCase(),
+
+            normalizedClass,
+
+            normalizedYear,
+
+            normalizedCourse
+                .toLowerCase(),
+
+            normalizedSection
+
+        ].join("|");
+
+
+        // =========================================
+        // GROUP LABEL
+        // =========================================
+
+        let groupLabel = "";
+
+        if (institutionType === "school") {
+
+            groupLabel =
+                `${normalizedInstitution} — Class ${normalizedClass} — Section ${normalizedSection}`;
+
+        } else {
+
+            const semesterLabels = {
+    "1": "1st Semester",
+    "2": "2nd Semester",
+    "3": "3rd Semester",
+    "4": "4th Semester",
+    "5": "5th Semester",
+    "6": "6th Semester",
+    "7": "7th Semester",
+    "8": "8th Semester"
+};
+
+const semesterLabel =
+    semesterLabels[normalizedYear] ||
+    `${normalizedYear} Semester`;
+
+    groupLabel =
+    `${normalizedInstitution} — ${semesterLabel} — ${normalizedCourse} — Section ${normalizedSection}`;
+
+}
+
+        // =========================================
+        // FIND / CREATE CLASS GROUP
+        // =========================================
+
+        let classGroup =
+            await ClassGroup.findOne({
+                groupKey
+            });
+
+
+        if (!classGroup) {
+
+            try {
+
+                classGroup =
+                    await ClassGroup.create({
+
+                        institutionType,
+
+                        institutionName:
+                            normalizedInstitution,
+
+                        schoolClass:
+                            normalizedClass,
+
+                        year:
+                            normalizedYear,
+
+                        course:
+                            normalizedCourse,
+
+                        section:
+                            normalizedSection,
+
+                        groupKey,
+
+                        label:
+                            groupLabel
+
+                    });
+
+            } catch (error) {
+
+                // Another registration may have
+                // created the same group first.
+
+                if (
+                    error &&
+                    error.code === 11000
+                ) {
+
+                    classGroup =
+                        await ClassGroup.findOne({
+                            groupKey
+                        });
+
+                } else {
+
+                    throw error;
+
+                }
+
+            }
+
+        }
+
+
+        if (!classGroup) {
+
+            return res.status(500).json({
+                message:
+                    "Could not create class group."
+            });
+
+        }
+
+
+        // =========================================
         // HASH PASSWORD
-        // ===============================
+        // =========================================
 
         const hashedPassword =
-            await bcrypt.hash(password, 10);
+            await bcrypt.hash(
+                password,
+                10
+            );
 
 
-        // ===============================
+        // =========================================
         // CREATE USER
-        // ===============================
+        // =========================================
 
         const newUser =
             await User.create({
@@ -717,7 +1034,9 @@ app.post("/api/register", async (req, res) => {
                     fullname.trim(),
 
                 email:
-                    email.trim().toLowerCase(),
+                    email
+                        .trim()
+                        .toLowerCase(),
 
                 username:
                     username.trim(),
@@ -728,15 +1047,19 @@ app.post("/api/register", async (req, res) => {
                 provider:
                     "local",
 
-                role:
-                    selectedRole
+                    role:
+            role === "teacher"
+                ? "teacher"
+                : "student",
 
-            });
+        classGroupId:
+            classGroup._id
 
+    });
 
-        // ===============================
+        // =========================================
         // SUCCESS
-        // ===============================
+        // =========================================
 
         res.status(201).json({
 
@@ -752,7 +1075,16 @@ app.post("/api/register", async (req, res) => {
                     newUser.email,
 
                 username:
-                    newUser.username
+                    newUser.username,
+
+                role:
+                    newUser.role,
+
+                classGroupId:
+                    newUser.classGroupId,
+
+                classGroup:
+                    classGroup.label
 
             }
 
@@ -765,7 +1097,6 @@ app.post("/api/register", async (req, res) => {
             "Registration error:",
             error
         );
-
 
         res.status(500).json({
 
@@ -967,35 +1298,137 @@ app.post(
 );
 
 
-// =================================
+/// =================================
 // GET CURRENT LOGGED-IN USER
 // =================================
 
-app.get("/api/me", (req, res) => {
+app.get(
+    "/api/me",
+    async (req, res) => {
 
-    if (!req.isAuthenticated()) {
+        try {
 
-        return res.status(401).json({
-            loggedIn: false,
-            message: "User is not logged in."
-        });
+            if (!req.isAuthenticated()) {
+
+                return res.status(401).json({
+
+                    loggedIn:
+                        false,
+
+                    message:
+                        "User is not logged in."
+
+                });
+
+            }
+
+
+            // =================================
+            // LOAD CLASS GROUP
+            // =================================
+
+            const group =
+                req.user.classGroupId
+
+                    ? await ClassGroup.findById(
+                        req.user.classGroupId
+                    ).lean()
+
+                    : null;
+
+
+            // =================================
+            // SEND USER
+            // =================================
+
+            res.json({
+
+                loggedIn:
+                    true,
+
+                user: {
+
+                    id:
+                        req.user._id,
+
+                    fullname:
+                        req.user.fullname,
+
+                    email:
+                        req.user.email,
+
+                    username:
+                        req.user.username || "",
+
+                    photo:
+                        req.user.photo || "",
+
+                    provider:
+                        req.user.provider || "local",
+
+                    role:
+                        req.user.role || "student",
+
+                    classGroupId:
+                        req.user.classGroupId || null,
+
+                    classGroup:
+                        group
+                            ? {
+
+                                id:
+                                    group._id,
+
+                                label:
+                                    group.label,
+
+                                institutionType:
+                                    group.institutionType,
+
+                                institutionName:
+                                    group.institutionName,
+
+                                schoolClass:
+                                    group.schoolClass,
+
+                                year:
+                                    group.year,
+
+                                course:
+                                    group.course,
+
+                                section:
+                                    group.section
+
+                            }
+                            : null
+
+                }
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Get current user error:",
+                error
+            );
+
+            res.status(500).json({
+
+                loggedIn:
+                    false,
+
+                message:
+                    "Could not load current user."
+
+            });
+
+        }
 
     }
-
-    res.json({
-        loggedIn: true,
-       user: {
-    id: req.user._id,
-    fullname: req.user.fullname,
-    email: req.user.email,
-    username: req.user.username || "",
-    photo: req.user.photo || "",
-    provider: req.user.provider || "local",
-    role: req.user.role || "student"
-}
-    });
-
-});
+);
 
 
 // ===============================
@@ -1231,10 +1664,6 @@ const examSchema = new mongoose.Schema(
             default: "draft"
         },
 
-        // =========================================
-        // NEW ONE-TIME EXAM SESSION
-        // =========================================
-
         scheduledAt: {
             type: Date,
             default: null
@@ -1245,15 +1674,12 @@ const examSchema = new mongoose.Schema(
             default: null
         },
 
-        // =========================================
-        // LEGACY FIELDS
-        // Keep them temporarily so old exams
-        // already stored in MongoDB do not break.
-        // =========================================
-
+        // Legacy fields kept for compatibility
         availabilityDays: {
             type: Number,
-            default: null
+            required: true,
+            min: 1,
+            default: 7
         },
 
         availableUntil: {
@@ -1264,6 +1690,12 @@ const examSchema = new mongoose.Schema(
         teacherId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
+            required: true
+        },
+
+        classGroupId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "ClassGroup",
             required: true
         },
 
@@ -1525,6 +1957,129 @@ function requireRole(role) {
     };
 }
 
+
+// =========================================================
+// CLASS GROUPS: TEACHER
+// =========================================================
+
+app.get(
+    "/api/class-groups",
+    requireRole("teacher"),
+    async (req, res) => {
+
+        try {
+
+            // =========================================
+            // TEACHER MUST HAVE A CLASS GROUP
+            // =========================================
+
+            if (!req.user.classGroupId) {
+
+                return res.json({
+                    groups: []
+                });
+
+            }
+
+
+            // =========================================
+            // FIND TEACHER'S OWN GROUP
+            // =========================================
+
+            const teacherGroup =
+                await ClassGroup.findById(
+                    req.user.classGroupId
+                );
+
+
+            if (!teacherGroup) {
+
+                return res.json({
+                    groups: []
+                });
+
+            }
+
+
+            // =========================================
+            // LOAD GROUPS FROM SAME INSTITUTION
+            // =========================================
+
+            const groups =
+                await ClassGroup.find({
+
+                    institutionType:
+                        teacherGroup.institutionType,
+
+                    institutionName:
+                        teacherGroup.institutionName
+
+                })
+                .sort({
+                    label: 1
+                })
+                .lean();
+
+
+            // =========================================
+            // SEND GROUPS TO TEACHER
+            // =========================================
+
+            res.json({
+
+                groups:
+                    groups.map(group => ({
+
+                        id:
+                            group._id,
+
+                        label:
+                            group.label,
+
+                        institutionType:
+                            group.institutionType,
+
+                        institutionName:
+                            group.institutionName,
+
+                        schoolClass:
+                            group.schoolClass,
+
+                        year:
+                            group.year,
+
+                        course:
+                            group.course,
+
+                        section:
+                            group.section
+
+                    }))
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                "Class groups error:",
+                error
+            );
+
+            res.status(500).json({
+
+                message:
+                    "Could not load class groups."
+
+            });
+
+        }
+
+    }
+);
+
+
+
 async function createNotification({ recipientId, role, type, title, message, icon, relatedId }) {
     try {
         await Notification.create({ recipientId, role, type, title, message, icon: icon || "fa-bell", relatedId: relatedId || null });
@@ -1659,17 +2214,18 @@ app.post(
         try {
 
             const {
-                title,
-                subject,
-                code,
-                duration,
-                totalMarks,
-                status,
-                scheduledAt,
-                sessionEndsAt,
-                questions
-            } = req.body;
-
+    title,
+    subject,
+    code,
+    duration,
+    totalMarks,
+    status,
+    scheduledAt,
+    sessionEndsAt,
+    classGroupId,
+    targetGroup: targetGroupInput,
+    questions
+} = req.body;
             // =====================================
             // BASIC VALIDATION
             // =====================================
@@ -1690,24 +2246,408 @@ app.post(
 
             }
 
+
+// =====================================
+// TARGET CLASS GROUP
+// =====================================
+
+const teacherGroup =
+    req.user.classGroupId
+        ? await ClassGroup.findById(
+            req.user.classGroupId
+        )
+        : null;
+
+if (!teacherGroup) {
+
+    return res.status(403).json({
+        message:
+            "Your teacher account has no class group assigned."
+    });
+
+}
+
+let targetGroup = null;
+
+
+// =====================================
+// OLD classGroupId SUPPORT
+// =====================================
+
+if (classGroupId) {
+
+    targetGroup =
+        await ClassGroup.findById(
+            classGroupId
+        );
+
+    if (!targetGroup) {
+
+        return res.status(404).json({
+            message:
+                "Selected class / group was not found."
+        });
+
+    }
+
+}
+
+
+// =====================================
+// MANUAL TARGET GROUP
+// =====================================
+
+else if (
+    targetGroupInput &&
+    typeof targetGroupInput === "object"
+) {
+
+    const institutionType =
+        String(
+            targetGroupInput.institutionType ||
+            ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    const normalizedInstitution =
+        String(
+            targetGroupInput.institutionName ||
+            ""
+        )
+        .trim()
+        .replace(/\s+/g, " ");
+
+
+    const normalizedClass =
+        institutionType === "school"
+            ? String(
+                targetGroupInput.schoolClass ||
+                ""
+            ).trim()
+            : "";
+
+
+    const normalizedYear =
+        institutionType === "college"
+            ? String(
+                targetGroupInput.year ||
+                ""
+            ).trim()
+            : "";
+
+
+    const normalizedCourse =
+        institutionType === "college"
+            ? String(
+                targetGroupInput.course ||
+                ""
+            )
+            .trim()
+            .replace(/\s+/g, " ")
+            .toUpperCase()
+            : "";
+
+
+    const normalizedSection =
+        String(
+            targetGroupInput.section ||
+            ""
+        )
+        .trim()
+        .toUpperCase();
+
+
+    if (
+        !["school", "college"]
+            .includes(institutionType)
+    ) {
+
+        return res.status(400).json({
+            message:
+                "Please select School or College / University."
+        });
+
+    }
+
+
+    if (!normalizedInstitution) {
+
+        return res.status(400).json({
+            message:
+                "Institution name is required."
+        });
+
+    }
+
+
+    if (!normalizedSection) {
+
+        return res.status(400).json({
+            message:
+                "Section is required."
+        });
+
+    }
+
+
+    if (
+        institutionType === "school" &&
+        !normalizedClass
+    ) {
+
+        return res.status(400).json({
+            message:
+                "School class is required."
+        });
+
+    }
+
+
+    if (
+        institutionType === "college" &&
+        (
+            !/^([1-8])$/.test(
+                normalizedYear
+            ) ||
+            !normalizedCourse
+        )
+    ) {
+
+        return res.status(400).json({
+            message:
+                "College semester 1-8 and course are required."
+        });
+
+    }
+
+
+    // =====================================
+    // TEACHER INSTITUTION CHECK
+    // =====================================
+
+    const teacherInstitution =
+        String(
+            teacherGroup.institutionName ||
+            ""
+        )
+        .trim()
+        .replace(/\s+/g, " ");
+
+
+    if (
+        teacherGroup.institutionType !==
+            institutionType ||
+        teacherInstitution.toLowerCase() !==
+            normalizedInstitution.toLowerCase()
+    ) {
+
+        return res.status(403).json({
+            message:
+                "The target institution must match your teacher account institution."
+        });
+
+    }
+
+
+    // =====================================
+    // SAME KEY AS STUDENT SIGNUP
+    // =====================================
+
+    const groupKey = [
+
+        institutionType,
+
+        normalizedInstitution
+            .toLowerCase(),
+
+        normalizedClass,
+
+        normalizedYear,
+
+        normalizedCourse
+            .toLowerCase(),
+
+        normalizedSection
+
+    ].join("|");
+
+
+    let groupLabel = "";
+
+
+    if (
+        institutionType ===
+        "school"
+    ) {
+
+        groupLabel =
+            `${normalizedInstitution} — Class ${normalizedClass} — Section ${normalizedSection}`;
+
+    } else {
+
+        const semesterLabels = {
+
+            "1": "1st Semester",
+            "2": "2nd Semester",
+            "3": "3rd Semester",
+            "4": "4th Semester",
+            "5": "5th Semester",
+            "6": "6th Semester",
+            "7": "7th Semester",
+            "8": "8th Semester"
+
+        };
+
+
+        const semesterLabel =
+            semesterLabels[
+                normalizedYear
+            ] ||
+            `${normalizedYear} Semester`;
+
+
+        groupLabel =
+            `${normalizedInstitution} — ${semesterLabel} — ${normalizedCourse} — Section ${normalizedSection}`;
+
+    }
+
+
+    // =====================================
+    // FIND OR CREATE GROUP
+    // =====================================
+
+    targetGroup =
+        await ClassGroup.findOne({
+            groupKey
+        });
+
+
+    if (!targetGroup) {
+
+        try {
+
+            targetGroup =
+                await ClassGroup.create({
+
+                    institutionType,
+
+                    institutionName:
+                        normalizedInstitution,
+
+                    schoolClass:
+                        normalizedClass,
+
+                    year:
+                        normalizedYear,
+
+                    course:
+                        normalizedCourse,
+
+                    section:
+                        normalizedSection,
+
+                    groupKey,
+
+                    label:
+                        groupLabel
+
+                });
+
+        } catch (error) {
+
+            if (
+                error &&
+                error.code === 11000
+            ) {
+
+                targetGroup =
+                    await ClassGroup.findOne({
+                        groupKey
+                    });
+
+            } else {
+
+                throw error;
+
+            }
+
+        }
+
+    }
+
+}
+
+
+else {
+
+    return res.status(400).json({
+        message:
+            "Target class / semester / section is required."
+    });
+
+}
+
+
+if (!targetGroup) {
+
+    return res.status(500).json({
+        message:
+            "Could not resolve the target class group."
+    });
+
+}
+
+
+// =====================================
+// FINAL INSTITUTION SECURITY
+// =====================================
+
+if (
+    targetGroup.institutionType !==
+        teacherGroup.institutionType ||
+
+    String(
+        targetGroup.institutionName
+    )
+    .trim()
+    .toLowerCase() !==
+        String(
+            teacherGroup.institutionName
+        )
+        .trim()
+        .toLowerCase()
+) {
+
+    return res.status(403).json({
+        message:
+            "The target institution must match your teacher account institution."
+    });
+
+}
+
+
+
+
+
+
             // =====================================
             // SESSION VALIDATION
             // =====================================
 
-            if (!scheduledAt || !sessionEndsAt) {
-
-                return res.status(400).json({
-                    message:
-                        "Exam start and session end time are required."
-                });
-
-            }
-
             const startDate =
-                new Date(scheduledAt);
+    scheduledAt
+        ? new Date(scheduledAt)
+        : new Date();
 
-            const endDate =
-                new Date(sessionEndsAt);
+const endDate =
+    sessionEndsAt
+        ? new Date(sessionEndsAt)
+        : new Date(
+            startDate.getTime() +
+            Number(duration) * 60 * 1000
+        );
 
             if (
                 Number.isNaN(startDate.getTime()) ||
@@ -1873,13 +2813,16 @@ app.post(
                         endDate,
 
                     availabilityDays:
-                        null,
+                        1,
 
                     teacherId:
-                        req.user._id,
+    req.user._id,
 
-                    questions:
-                        normalizedQuestions
+classGroupId:
+    targetGroup._id,
+
+questions:
+    normalizedQuestions
                 });
 
             if (
@@ -2295,9 +3238,40 @@ app.get("/api/student/exams", requireRole("student"), async (req, res) => {
 
     try {
 
-        const exams = await Exam.find({
-            status: "published"
-        }).sort({ scheduledAt: 1, createdAt: -1 });
+        if (!req.user.classGroupId) {
+
+    return res.json({
+
+        available: [],
+
+        upcoming: [],
+
+        expired: []
+
+    });
+
+}
+
+
+const exams =
+    await Exam.find({
+
+        status:
+            "published",
+
+        classGroupId:
+            req.user.classGroupId
+
+    })
+    .sort({
+
+        scheduledAt:
+            1,
+
+        createdAt:
+            -1
+
+    });
 
         const results = await Result.find({
             studentId: req.user._id
@@ -2399,6 +3373,28 @@ app.post(
                     message:
                         "Exam not found."
                 });
+
+
+
+// =====================================
+// CLASS GROUP SECURITY CHECK
+// =====================================
+
+if (
+    !req.user.classGroupId ||
+    !exam.classGroupId ||
+    String(exam.classGroupId) !==
+        String(req.user.classGroupId)
+) {
+
+    return res.status(403).json({
+
+        message:
+            "This exam is not assigned to your class / group."
+
+    });
+
+}
 
             }
 
@@ -2638,14 +3634,45 @@ app.get("/api/exams/:id", requireLogin, async (req, res) => {
         const currentRole =
             req.user.role || "student";
 
-        if (
-            currentRole === "student" &&
-            !examIsCurrentlyAvailable(exam)
-        ) {
-            return res.status(403).json({
-                message: "This exam is not currently available."
-            });
-        }
+        if (currentRole === "student") {
+
+    // =====================================
+    // CLASS GROUP SECURITY CHECK
+    // =====================================
+
+    if (
+        !req.user.classGroupId ||
+        !exam.classGroupId ||
+        String(exam.classGroupId) !==
+            String(req.user.classGroupId)
+    ) {
+
+        return res.status(403).json({
+
+            message:
+                "This exam is not assigned to your class / group."
+
+        });
+
+    }
+
+
+    // =====================================
+    // EXAM SESSION CHECK
+    // =====================================
+
+    if (!examIsCurrentlyAvailable(exam)) {
+
+        return res.status(403).json({
+
+            message:
+                "This exam is not currently available."
+
+        });
+
+    }
+
+}
 
         if (
             currentRole === "teacher" &&
@@ -2721,15 +3748,37 @@ app.post("/api/exams/:id/submit", requireRole("student"), async (req, res) => {
 
     try {
 
-        const exam = await Exam.findById(req.params.id);
+    const exam =
+        await Exam.findById(
+            req.params.id
+        );
 
-        if (!exam) {
-            return res.status(404).json({
-                message: "Exam not found."
-            });
-        }
+    if (!exam) {
+        return res.status(404).json({
+            message: "Exam not found."
+        });
+    }
 
-        const existing = await Result.findOne({
+// =====================================
+// CLASS GROUP SECURITY CHECK
+// =====================================
+
+if (
+    !req.user.classGroupId ||
+    !exam.classGroupId ||
+    String(exam.classGroupId) !==
+        String(req.user.classGroupId)
+) {
+
+    return res.status(403).json({
+        message:
+            "This exam is not assigned to your class / group."
+    });
+
+}
+
+
+const existing = await Result.findOne({
             examId: exam._id,
             studentId: req.user._id
         });
@@ -4012,6 +5061,14 @@ io.on(
         const user =
             socket.request.user;
 
+            if (user?._id) {
+    socket.data.userId = String(user._id);
+}
+
+if (user?.role) {
+    socket.data.role = user.role;
+}
+
 
             socket.on(
     "proctoring:event",
@@ -4740,6 +5797,371 @@ io.on(
         );
 
 
+
+
+
+                // =========================================
+        // TEACHER VOICE OFFER
+        // =========================================
+
+        socket.on(
+            "teacher:voice-offer",
+            async ({
+                targetSocketId,
+                offer
+            }) => {
+
+                try {
+
+                    if (
+                        socket.data.role !==
+                        "teacher"
+                    ) {
+                        return;
+                    }
+
+                    if (
+                        !targetSocketId ||
+                        !offer
+                    ) {
+                        return;
+                    }
+
+                    const exam =
+                        await Exam.findById(
+                            socket.data.examId
+                        );
+
+                    if (
+                        !exam ||
+                        String(exam.teacherId) !==
+                        String(socket.data.userId)
+                    ) {
+                        return;
+                    }
+
+                    const target =
+                        io.sockets.sockets.get(
+                            targetSocketId
+                        );
+
+                    if (
+                        !target ||
+                        target.data.role !==
+                        "student" ||
+                        target.data.examId !==
+                        socket.data.examId
+                    ) {
+                        return;
+                    }
+
+                    const attempt =
+                        await ExamAttempt.findOne({
+                            _id:
+                                target.data.attemptId,
+
+                            examId:
+                                exam._id,
+
+                            studentId:
+                                target.data.studentId
+                        });
+
+                    if (
+                        !attempt ||
+                        attempt.status ===
+                            "submitted" ||
+                        attempt.status ===
+                            "auto-submitted"
+                    ) {
+                        return;
+                    }
+
+                    target.emit(
+                        "teacher:voice-offer",
+                        {
+                            fromSocketId:
+                                socket.id,
+
+                            offer
+                        }
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Teacher voice offer error:",
+                        error
+                    );
+
+                }
+
+            }
+        );
+
+
+        // =========================================
+        // TEACHER VOICE ANSWER
+        // =========================================
+
+        socket.on(
+            "teacher:voice-answer",
+            async ({
+                targetSocketId,
+                answer
+            }) => {
+
+                try {
+
+                    if (
+                        socket.data.role !==
+                        "student"
+                    ) {
+                        return;
+                    }
+
+                    if (
+                        !targetSocketId ||
+                        !answer
+                    ) {
+                        return;
+                    }
+
+                    const target =
+                        io.sockets.sockets.get(
+                            targetSocketId
+                        );
+
+                    if (
+                        !target ||
+                        target.data.role !==
+                        "teacher" ||
+                        target.data.examId !==
+                        socket.data.examId
+                    ) {
+                        return;
+                    }
+
+                    const exam =
+                        await Exam.findById(
+                            socket.data.examId
+                        );
+
+                    if (
+                        !exam ||
+                        String(exam.teacherId) !==
+                        String(target.data.userId)
+                    ) {
+                        return;
+                    }
+
+                    target.emit(
+                        "teacher:voice-answer",
+                        {
+                            fromSocketId:
+                                socket.id,
+
+                            answer
+                        }
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Teacher voice answer error:",
+                        error
+                    );
+
+                }
+
+            }
+        );
+
+
+        // =========================================
+        // TEACHER VOICE ICE
+        // =========================================
+
+        socket.on(
+            "teacher:voice-ice",
+            async ({
+                targetSocketId,
+                candidate
+            }) => {
+
+                try {
+
+                    if (
+                        !targetSocketId ||
+                        !candidate
+                    ) {
+                        return;
+                    }
+
+                    const target =
+                        io.sockets.sockets.get(
+                            targetSocketId
+                        );
+
+                    if (!target) {
+                        return;
+                    }
+
+                    if (
+                        target.data.examId !==
+                        socket.data.examId
+                    ) {
+                        return;
+                    }
+
+                    const validPair =
+                        (
+                            socket.data.role ===
+                            "teacher" &&
+                            target.data.role ===
+                            "student"
+                        ) ||
+                        (
+                            socket.data.role ===
+                            "student" &&
+                            target.data.role ===
+                            "teacher"
+                        );
+
+                    if (!validPair) {
+                        return;
+                    }
+
+                    const exam =
+                        await Exam.findById(
+                            socket.data.examId
+                        );
+
+                    if (!exam) {
+                        return;
+                    }
+
+                    if (
+                        socket.data.role ===
+                        "teacher"
+                    ) {
+
+                        if (
+                            String(
+                                exam.teacherId
+                            ) !==
+                            String(
+                                socket.data.userId
+                            )
+                        ) {
+                            return;
+                        }
+
+                    } else {
+
+                        if (
+                            String(
+                                exam.teacherId
+                            ) !==
+                            String(
+                                target.data.userId
+                            )
+                        ) {
+                            return;
+                        }
+
+                    }
+
+                    target.emit(
+                        "teacher:voice-ice",
+                        {
+                            fromSocketId:
+                                socket.id,
+
+                            candidate
+                        }
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Teacher voice ICE error:",
+                        error
+                    );
+
+                }
+
+            }
+        );
+
+
+        // =========================================
+        // TEACHER VOICE STOP
+        // =========================================
+
+        socket.on(
+            "teacher:voice-stop",
+            async ({
+                targetSocketId
+            }) => {
+
+                try {
+
+                    if (
+                        socket.data.role !==
+                        "teacher" ||
+                        !targetSocketId
+                    ) {
+                        return;
+                    }
+
+                    const exam =
+                        await Exam.findById(
+                            socket.data.examId
+                        );
+
+                    if (
+                        !exam ||
+                        String(exam.teacherId) !==
+                        String(socket.data.userId)
+                    ) {
+                        return;
+                    }
+
+                    const target =
+                        io.sockets.sockets.get(
+                            targetSocketId
+                        );
+
+                    if (
+                        !target ||
+                        target.data.role !==
+                        "student" ||
+                        target.data.examId !==
+                        socket.data.examId
+                    ) {
+                        return;
+                    }
+
+                    target.emit(
+                        "teacher:voice-stop"
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Teacher voice stop error:",
+                        error
+                    );
+
+                }
+
+            }
+        );
+
+
+
+
         // =========================================
         // DISCONNECT
         // =========================================
@@ -4853,12 +6275,18 @@ server.listen(
     PORT,
     "0.0.0.0",
     () => {
-        console.log(
-            `🚀 ExamSecure server running on port ${PORT}`
-        );
 
         console.log(
-            "🎥 WebRTC live proctoring signaling enabled."
-        );
+    `🚀 ExamSecure server running on port ${PORT}`
+);
+
+console.log(
+    "🌐 Open: http://127.0.0.1:5000/loginPrem.html"
+);
+
+console.log(
+    "🎥 WebRTC live proctoring signaling enabled."
+);
+       
     }
 );
