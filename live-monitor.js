@@ -17,7 +17,10 @@ const peerConnections =
 const pendingCandidates =
     new Map();
 
-    let teacherVoiceStream = null;
+const pendingOffers =
+    new Map();    
+
+let teacherVoiceStream = null;
 
 let teacherVoicePeerConnection = null;
 
@@ -1582,23 +1585,72 @@ function connectMonitorSocket() {
 
 
     monitorSocket.on(
-        "student:joined",
-        attempt => {
+    "student:joined",
+    async attempt => {
 
-            students.set(
-                String(
-                    attempt.attemptId
-                ),
-                attempt
+        const key =
+            String(
+                attempt.attemptId
             );
 
-            renderStudentCard(
-                attempt
+        students.set(
+            key,
+            attempt
+        );
+
+        renderStudentCard(
+            attempt
+        );
+
+        const pending =
+            pendingOffers.get(
+                key
+            );
+
+        if (!pending) {
+            return;
+        }
+
+        pendingOffers.delete(
+            key
+        );
+
+        const current =
+            students.get(
+                key
+            );
+
+        if (current) {
+
+            current.socketId =
+                pending.fromSocketId;
+
+            students.set(
+                key,
+                current
             );
 
         }
-    );
 
+        try {
+
+            await handleOffer(
+                pending.fromSocketId,
+                pending.offer,
+                current
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Pending WebRTC offer error:",
+                error
+            );
+
+        }
+
+    }
+);
 
     monitorSocket.on(
         "student:status",
@@ -1647,6 +1699,10 @@ function connectMonitorSocket() {
                 String(
                     data.attemptId
                 );
+
+                pendingOffers.delete(
+    key
+);
 
 
                 if (
@@ -1782,53 +1838,78 @@ function connectMonitorSocket() {
 
 
     monitorSocket.on(
-        "webrtc:offer",
-        async ({
-            fromSocketId,
-            offer,
-            studentId
-        }) => {
+    "webrtc:offer",
+    async ({
+        fromSocketId,
+        offer,
+        studentId,
+        attemptId
+    }) => {
 
+        if (
+            !fromSocketId ||
+            !offer ||
+            !attemptId
+        ) {
+            return;
+        }
 
-
-            const matching =
-    Array.from(
-        students.values()
-    ).find(
-        student =>
+        const key =
             String(
-                student.studentId
-            ) ===
-            String(
-                studentId
-            )
-    );
+                attemptId
+            );
 
-if (matching) {
+        const matching =
+            students.get(
+                key
+            );
 
-    matching.socketId =
-        fromSocketId;
+        if (!matching) {
 
-    students.set(
-        String(
-            matching.attemptId
-        ),
-        matching
-    );
+            pendingOffers.set(
+                key,
+                {
+                    fromSocketId,
+                    offer,
+                    studentId
+                }
+            );
 
-}
+            console.log(
+                "WebRTC offer queued until student card exists:",
+                key
+            );
 
-await handleOffer(
-    fromSocketId,
-    offer,
-    matching
-);
+            return;
+        }
 
-            
+        matching.socketId =
+            fromSocketId;
+
+        students.set(
+            key,
+            matching
+        );
+
+        try {
+
+            await handleOffer(
+                fromSocketId,
+                offer,
+                matching
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Teacher WebRTC offer error:",
+                error
+            );
 
         }
-    );
 
+    }
+);
 
     monitorSocket.on(
         "webrtc:ice-candidate",

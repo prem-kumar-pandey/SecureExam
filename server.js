@@ -5660,48 +5660,68 @@ if (user?.role) {
         // WEBRTC OFFER
         // =========================================
 
-        socket.on(
+       socket.on(
+    "webrtc:offer",
+    ({
+        targetSocketId,
+        offer
+    }) => {
+
+        if (
+            socket.data.role !==
+            "student"
+        ) {
+            return;
+        }
+
+        if (
+            !targetSocketId ||
+            !offer
+        ) {
+            return;
+        }
+
+        const target =
+            io.sockets.sockets.get(
+                targetSocketId
+            );
+
+        if (!target) {
+            return;
+        }
+
+        if (
+            target.data.role !==
+            "teacher"
+        ) {
+            return;
+        }
+
+        if (
+            target.data.examId !==
+            socket.data.examId
+        ) {
+            return;
+        }
+
+        target.emit(
             "webrtc:offer",
-            ({
-                targetSocketId,
-                offer
-            }) => {
+            {
+                fromSocketId:
+                    socket.id,
 
-                if (!targetSocketId || !offer) {
-                    return;
-                }
+                offer,
 
-                const target =
-                    io.sockets.sockets.get(
-                        targetSocketId
-                    );
+                studentId:
+                    socket.data.studentId,
 
-                if (!target) {
-                    return;
-                }
-
-                if (
-                    target.data.examId !==
-                    socket.data.examId
-                ) {
-                    return;
-                }
-
-                target.emit(
-                    "webrtc:offer",
-                    {
-                        fromSocketId:
-                            socket.id,
-
-                        offer,
-
-                        studentId:
-                            socket.data.studentId
-                    }
-                );
-
+                attemptId:
+                    socket.data.attemptId
             }
         );
+
+    }
+);
 
 
         // =========================================
