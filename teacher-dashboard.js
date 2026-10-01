@@ -1173,9 +1173,8 @@ function renderTeacherExams() {
                             }
                         </span>
 
-                       ${exam.status === "published" ? `
+                        ${exam.status === "published" ? `
     <button
-        type="button"
         class="secondary-action"
         onclick="openLiveMonitor('${exam.id}')">
 
