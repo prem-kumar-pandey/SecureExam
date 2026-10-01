@@ -10,138 +10,218 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Live Monitoring - ExamSecure</title>
-
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    >
+    <title>Live Monitor - ExamSecure</title>
 
     <link
         rel="stylesheet"
         href="/teacher-dashboard.css"
     >
 
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
     <style>
 
-        .live-monitor-page {
-            padding: 30px;
+        .monitor-page {
+            padding: 28px;
+            min-height: 100vh;
         }
 
-        .live-monitor-header {
+        .monitor-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
         }
 
-        .live-monitor-header h1 {
+        .monitor-title h1 {
             margin: 0;
         }
 
-        .live-monitor-header p {
+        .monitor-title p {
             margin: 7px 0 0;
-            opacity: 0.75;
+            opacity: 0.72;
         }
 
-        .live-exam-grid {
+        .monitor-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+            background: rgba(255,255,255,0.07);
+        }
+
+        .live-indicator span {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #39d98a;
+        }
+
+        .monitor-stats {
             display: grid;
             grid-template-columns:
-                repeat(auto-fill, minmax(320px, 1fr));
+                repeat(5, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .monitor-stat {
+            padding: 18px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .monitor-stat span {
+            display: block;
+            font-size: 12px;
+            opacity: 0.65;
+            margin-bottom: 7px;
+        }
+
+        .monitor-stat strong {
+            font-size: 25px;
+        }
+
+        .monitor-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 320px;
             gap: 20px;
+            align-items: start;
         }
 
-        .live-exam-card {
-            padding: 24px;
+        .monitor-panel {
             border-radius: 18px;
-            border: 1px solid rgba(255,255,255,0.10);
+            padding: 20px;
+            background: rgba(255,255,255,0.045);
+            border: 1px solid rgba(255,255,255,0.08);
         }
 
-        .live-exam-card h2 {
-            margin: 12px 0 8px;
+        .monitor-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
         }
 
-        .live-exam-meta {
+        .monitor-panel-header h2 {
+            margin: 0;
+        }
+
+        .students-grid {
             display: grid;
             grid-template-columns:
-                repeat(2, 1fr);
-            gap: 12px;
-            margin: 18px 0;
+                repeat(auto-fill, minmax(300px, 1fr));
+            gap: 18px;
         }
 
-        .live-exam-meta div {
+        .empty-monitor {
+            padding: 55px 20px;
+            text-align: center;
+            opacity: 0.7;
+            border-radius: 16px;
+            border: 1px dashed rgba(255,255,255,0.12);
+        }
+
+        .selected-student {
+            min-height: 160px;
+            margin-bottom: 20px;
+            padding: 18px;
+            border-radius: 15px;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .selected-student > span {
+            font-size: 11px;
+            opacity: 0.6;
+            letter-spacing: 0.8px;
+        }
+
+        .selected-student h3 {
+            margin: 7px 0 12px;
+        }
+
+        .selected-student p {
+            margin: 6px 0;
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        .alerts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 470px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
             padding: 12px;
             border-radius: 12px;
             background: rgba(255,255,255,0.05);
         }
 
-        .live-exam-meta span {
+        .alert-item strong,
+        .alert-item span,
+        .alert-item small {
             display: block;
-            font-size: 12px;
-            opacity: 0.65;
-            margin-bottom: 4px;
         }
 
-        .monitor-exam-button {
-            width: 100%;
-            border: 0;
-            border-radius: 12px;
-            padding: 13px 18px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 14px;
+        .alert-item span {
+            margin-top: 4px;
+            font-size: 13px;
+            opacity: 0.8;
         }
 
-        .monitor-exam-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .alert-item small {
+            margin-top: 5px;
+            opacity: 0.55;
+            font-size: 11px;
         }
 
-        .live-exam-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            padding: 6px 10px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
-        }
+        @media (max-width: 1100px) {
 
-        .live-exam-status.live {
-            background: rgba(0, 200, 120, 0.15);
-        }
+            .monitor-stats {
+                grid-template-columns:
+                    repeat(3, minmax(0, 1fr));
+            }
 
-        .live-exam-status.upcoming {
-            background: rgba(255, 190, 70, 0.15);
-        }
+            .monitor-layout {
+                grid-template-columns: 1fr;
+            }
 
-        .live-exam-status.completed {
-            background: rgba(130, 140, 160, 0.15);
-        }
-
-        .live-exam-status.draft {
-            background: rgba(180, 180, 180, 0.15);
-        }
-
-        .live-empty {
-            padding: 60px 20px;
-            text-align: center;
-            opacity: 0.75;
         }
 
         @media (max-width: 700px) {
 
-            .live-monitor-page {
-                padding: 18px;
+            .monitor-page {
+                padding: 16px;
             }
 
-            .live-monitor-header {
-                align-items: flex-start;
+            .monitor-header {
                 flex-direction: column;
             }
 
-            .live-exam-grid {
+            .monitor-stats {
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+            }
+
+            .students-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -154,357 +234,200 @@
 
 <body>
 
-    <main class="live-monitor-page">
+<main class="monitor-page">
 
-        <div class="live-monitor-header">
+    <!-- =========================================
+         HEADER
+    ========================================== -->
 
-            <div>
+    <header class="monitor-header">
 
-                <h1>
-                    Live Monitoring
-                </h1>
+        <div class="monitor-title">
 
-                <p>
-                    Select an exam to monitor students in real time.
-                </p>
-
+            <div
+                id="liveIndicator"
+                class="live-indicator"
+            >
+                <span></span>
+                LIVE
             </div>
 
-            <button
-                type="button"
-                class="secondary-action"
-                onclick="window.location.href='/teacher-dashboard.html'"
-            >
-                <i class="fa-solid fa-arrow-left"></i>
-                Teacher Dashboard
-            </button>
+            <h1 id="examName">
+                Live Monitoring
+            </h1>
+
+            <p id="examSchedule">
+                Loading exam session...
+            </p>
 
         </div>
 
 
-        <section
-            id="liveExamGrid"
-            class="live-exam-grid"
-        >
+        <div class="monitor-actions">
 
-            <div class="live-empty">
-                Loading exams...
+            <button
+                type="button"
+                class="secondary-action"
+                id="refreshMonitor"
+            >
+                <i class="fa-solid fa-rotate"></i>
+                Refresh
+            </button>
+
+            <button
+                type="button"
+                class="secondary-action"
+                onclick="window.location.href='/live-monitoring.html'"
+            >
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to Exams
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================================
+         LIVE COUNTS
+    ========================================== -->
+
+    <section class="monitor-stats">
+
+        <div class="monitor-stat">
+            <span>Expected</span>
+            <strong id="expectedCount">0</strong>
+        </div>
+
+        <div class="monitor-stat">
+            <span>Joined</span>
+            <strong id="joinedCount">0</strong>
+        </div>
+
+        <div class="monitor-stat">
+            <span>Active</span>
+            <strong id="activeCount">0</strong>
+        </div>
+
+        <div class="monitor-stat">
+            <span>Submitted</span>
+            <strong id="submittedCount">0</strong>
+        </div>
+
+        <div class="monitor-stat">
+            <span>Alerts</span>
+            <strong id="alertCount">0</strong>
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         MONITOR CONTENT
+    ========================================== -->
+
+    <section class="monitor-layout">
+
+
+        <!-- STUDENTS -->
+
+        <div class="monitor-panel">
+
+            <div class="monitor-panel-header">
+
+                <div>
+                    <h2>Students</h2>
+                    <p>
+                        Live camera and microphone streams
+                    </p>
+                </div>
+
             </div>
 
-        </section>
 
-    </main>
+            <div
+                id="studentsGrid"
+                class="students-grid"
+            >
 
+                <div
+                    id="studentsEmptyState"
+                    class="empty-monitor"
+                >
+                    Waiting for students to enter the exam...
+                </div>
 
-    <script>
+            </div>
 
-        function escapeHtml(value) {
+        </div>
 
-            return String(value ?? "")
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
 
-        }
+        <!-- SIDE PANEL -->
 
+        <aside>
 
-        function getExamState(exam) {
+            <div class="monitor-panel">
 
-            const now =
-                Date.now();
+                <div class="monitor-panel-header">
 
-            const start =
-                exam.scheduledAt
-                    ? new Date(exam.scheduledAt).getTime()
-                    : NaN;
+                    <h2>Selected Student</h2>
 
-            const end =
-                exam.sessionEndsAt
-                    ? new Date(exam.sessionEndsAt).getTime()
-                    : NaN;
+                </div>
 
+                <div
+                    id="selectedStudent"
+                    class="selected-student"
+                >
+                    <span>SELECTED STUDENT</span>
 
-            if (exam.status !== "published") {
+                    <h3>
+                        No student selected
+                    </h3>
 
-                return {
-                    text: "DRAFT",
-                    className: "draft",
-                    canMonitor: false
-                };
+                    <p>
+                        Click View on a student card.
+                    </p>
+                </div>
 
-            }
+            </div>
 
 
-            if (
-                Number.isFinite(start) &&
-                Number.isFinite(end) &&
-                now >= start &&
-                now <= end
-            ) {
+            <div
+                class="monitor-panel"
+                style="margin-top:20px;"
+            >
 
-                return {
-                    text: "LIVE NOW",
-                    className: "live",
-                    canMonitor: true
-                };
+                <div class="monitor-panel-header">
 
-            }
+                    <h2>Alerts</h2>
 
+                </div>
 
-            if (
-                Number.isFinite(start) &&
-                now < start
-            ) {
+                <div
+                    id="alertsList"
+                    class="alerts-list"
+                >
 
-                return {
-                    text: "UPCOMING",
-                    className: "upcoming",
-                    canMonitor: false
-                };
-
-            }
-
-
-            return {
-                text: "COMPLETED",
-                className: "completed",
-                canMonitor: false
-            };
-
-        }
-
-
-        function openExamMonitor(examId) {
-
-            window.location.href =
-                `/live-monitor.html?examId=${encodeURIComponent(examId)}`;
-
-        }
-
-
-        async function loadLiveMonitoringExams() {
-
-            const grid =
-                document.getElementById("liveExamGrid");
-
-
-            try {
-
-                const response =
-                    await fetch(
-                        "/api/teacher/exams",
-                        {
-                            credentials: "include"
-                        }
-                    );
-
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        "Could not load teacher exams."
-                    );
-
-                }
-
-
-                const data =
-                    await response.json();
-
-
-                const exams =
-                    data.exams || [];
-
-
-                if (!exams.length) {
-
-                    grid.innerHTML = `
-                        <div class="live-empty">
-                            <i class="fa-solid fa-video-slash"></i>
-
-                            <h2>
-                                No exams created yet
-                            </h2>
-
-                            <p>
-                                Create an exam first.
-                            </p>
-                        </div>
-                    `;
-
-                    return;
-
-                }
-
-
-                grid.innerHTML =
-                    exams.map(exam => {
-
-                        const state =
-                            getExamState(exam);
-
-
-                        const scheduled =
-                            exam.scheduledAt
-                                ? new Date(
-                                    exam.scheduledAt
-                                ).toLocaleString()
-                                : "Not scheduled";
-
-
-                        const sessionEnd =
-                            exam.sessionEndsAt
-                                ? new Date(
-                                    exam.sessionEndsAt
-                                ).toLocaleString()
-                                : "Not available";
-
-
-                        return `
-
-                            <article class="live-exam-card">
-
-                                <span
-                                    class="
-                                        live-exam-status
-                                        ${state.className}
-                                    "
-                                >
-                                    ${state.text}
-                                </span>
-
-
-                                <h2>
-                                    ${escapeHtml(
-                                        exam.title || "Untitled Exam"
-                                    )}
-                                </h2>
-
-
-                                <p>
-                                    ${escapeHtml(
-                                        exam.subject || ""
-                                    )}
-                                </p>
-
-
-                                <div class="live-exam-meta">
-
-                                    <div>
-                                        <span>Exam Code</span>
-                                        <strong>
-                                            ${escapeHtml(
-                                                exam.code || "-"
-                                            )}
-                                        </strong>
-                                    </div>
-
-                                    <div>
-                                        <span>Questions</span>
-                                        <strong>
-                                            ${exam.questionCount || 0}
-                                        </strong>
-                                    </div>
-
-                                    <div>
-                                        <span>Marks</span>
-                                        <strong>
-                                            ${exam.totalMarks || 0}
-                                        </strong>
-                                    </div>
-
-                                    <div>
-                                        <span>Duration</span>
-                                        <strong>
-                                            ${exam.duration || 0} min
-                                        </strong>
-                                    </div>
-
-                                </div>
-
-
-                                <p>
-                                    <strong>Starts:</strong>
-                                    ${escapeHtml(scheduled)}
-                                </p>
-
-
-                                <p>
-                                    <strong>Ends:</strong>
-                                    ${escapeHtml(sessionEnd)}
-                                </p>
-
-
-                                <button
-                                    type="button"
-                                    class="monitor-exam-button secondary-action"
-                                    ${state.canMonitor ? "" : "disabled"}
-                                    onclick="
-                                        openExamMonitor(
-                                            '${exam.id}'
-                                        )
-                                    "
-                                >
-
-                                    <i class="fa-solid fa-video"></i>
-
-                                    ${state.canMonitor
-                                        ? "Monitor Exam"
-                                        : "Monitoring Unavailable"
-                                    }
-
-                                </button>
-
-                            </article>
-
-                        `;
-
-                    }).join("");
-
-
-            } catch (error) {
-
-                console.error(
-                    "Live monitoring exams error:",
-                    error
-                );
-
-
-                grid.innerHTML = `
-
-                    <div class="live-empty">
-
-                        <h2>
-                            Could not load exams
-                        </h2>
-
-                        <p>
-                            ${escapeHtml(error.message)}
-                        </p>
-
+                    <div class="empty-monitor">
+                        No proctoring alerts yet.
                     </div>
 
-                `;
+                </div>
 
-            }
+            </div>
 
-        }
+        </aside>
 
+    </section>
 
-        document.addEventListener(
-            "DOMContentLoaded",
-            loadLiveMonitoringExams
-        );
+</main>
 
 
-        setInterval(
-            loadLiveMonitoringExams,
-            5000
-        );
+<!-- Socket.IO client is required by live-monitor.js -->
+<script src="/socket.io/socket.io.js"></script>
 
-    </script>
+<!-- Actual live monitoring/WebRTC receiver -->
+<script src="/live-monitor.js"></script>
 
 </body>
 
