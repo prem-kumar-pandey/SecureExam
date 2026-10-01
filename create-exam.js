@@ -87,6 +87,16 @@ function updateTargetFields() {
             "examCollegeSectionLabel"
         );
 
+        const examCodeLabel =
+    document.getElementById(
+        "examCodeLabel"
+    );
+
+const examCode =
+    document.getElementById(
+        "code"
+    );
+
 
     const schoolClass =
         document.getElementById(
@@ -145,6 +155,20 @@ function updateTargetFields() {
         collegeSectionLabel.hidden =
             !isCollege;
     }
+
+    if (examCodeLabel) {
+    examCodeLabel.hidden =
+        !isCollege;
+}
+
+if (examCode) {
+    examCode.required =
+        isCollege;
+
+    if (!isCollege) {
+        examCode.value = "";
+    }
+}
 
 
     if (schoolClass) {
@@ -311,6 +335,17 @@ function addQuestion() {
 
         </label>
 
+        <label style="margin-top:12px">
+    Marks
+    <input
+        class="question-marks"
+        type="number"
+        min="1"
+        value="1"
+        required
+    >
+</label>
+
 
         <div
             class="portal-row"
@@ -336,6 +371,7 @@ function addQuestion() {
 /* =========================================================
    COLLECT QUESTIONS
 ========================================================= */
+
 
 function collectQuestions() {
 
@@ -372,11 +408,85 @@ function collectQuestions() {
                     ?.value
             ),
 
-        marks: 1
+        marks:
+            Math.max(
+                1,
+                Number(
+                    card
+                        .querySelector(
+                            ".question-marks"
+                        )
+                        ?.value
+                ) || 1
+            )
 
     }));
 }
 
+
+/* =========================================================
+   AUTOMATIC EXAM END TIME
+========================================================= */
+
+function updateCalculatedEndTime() {
+
+    const scheduledAt =
+        document.getElementById(
+            "scheduledAt"
+        )?.value;
+
+    const duration =
+        Number(
+            document.getElementById(
+                "duration"
+            )?.value
+        );
+
+    const endInput =
+        document.getElementById(
+            "calculatedEndTime"
+        );
+
+    if (!endInput) {
+        return;
+    }
+
+    if (
+        !scheduledAt ||
+        !duration ||
+        duration < 1
+    ) {
+        endInput.value = "";
+        return;
+    }
+
+    const start =
+        new Date(scheduledAt);
+
+    if (
+        Number.isNaN(
+            start.getTime()
+        )
+    ) {
+        endInput.value = "";
+        return;
+    }
+
+    const end =
+        new Date(
+            start.getTime() +
+            duration * 60 * 1000
+        );
+
+    endInput.value =
+        end.toLocaleString(
+            undefined,
+            {
+                dateStyle: "medium",
+                timeStyle: "short"
+            }
+        );
+}
 
 /* =========================================================
    STARTUP
@@ -412,7 +522,43 @@ document.addEventListener(
 
         updateTargetFields();
 
-        addQuestion();
+const scheduledAtInput =
+    document.getElementById(
+        "scheduledAt"
+    );
+
+const durationInput =
+    document.getElementById(
+        "duration"
+    );
+
+if (scheduledAtInput) {
+    scheduledAtInput.addEventListener(
+        "input",
+        updateCalculatedEndTime
+    );
+
+    scheduledAtInput.addEventListener(
+        "change",
+        updateCalculatedEndTime
+    );
+}
+
+if (durationInput) {
+    durationInput.addEventListener(
+        "input",
+        updateCalculatedEndTime
+    );
+
+    durationInput.addEventListener(
+        "change",
+        updateCalculatedEndTime
+    );
+}
+
+updateCalculatedEndTime();
+
+addQuestion();
 
     }
 );
@@ -683,12 +829,16 @@ document
                         .trim() || "",
 
                 code:
-                    document
-                        .getElementById(
-                            "code"
-                        )
-                        ?.value
-                        .trim() || "",
+    institutionType === "college"
+        ? (
+            document
+                .getElementById(
+                    "code"
+                )
+                ?.value
+                .trim() || ""
+        )
+        : "",
 
                 duration:
                     Number(
@@ -719,11 +869,14 @@ document
 
 
             if (
-                !payload.title ||
-                !payload.subject ||
-                !payload.code ||
-                !payload.duration
-            ) {
+    !payload.title ||
+    !payload.subject ||
+    !payload.duration ||
+    (
+        institutionType === "college" &&
+        !payload.code
+    )
+) {
 
                 message.textContent =
                     "Complete all exam details.";

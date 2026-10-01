@@ -15,7 +15,6 @@
         "teacher-dashboard.html": "dashboard",
         "create-exam.html": "create-exam",
         "manage-exams.html": "manage-exams",
-        "question-bank.html": "question-bank",
         "teacher-results.html": "teacher-results",
         "analytics.html": "analytics",
         "teacher-notifications.html": "teacher-notifications",
@@ -40,7 +39,7 @@
             if (!data.loggedIn || !data.user) return;
 
             const user = data.user;
-            const fallback = currentPage.startsWith("teacher-") || currentPage === "create-exam.html" || currentPage === "manage-exams.html" || currentPage === "question-bank.html" || currentPage === "analytics.html"
+            const fallback = currentPage.startsWith("teacher-") || currentPage === "create-exam.html" || currentPage === "manage-exams.html" || currentPage === "analytics.html"
                 ? "Teacher"
                 : "Student";
 

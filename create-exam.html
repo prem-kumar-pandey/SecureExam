@@ -86,13 +86,13 @@
 
 
                 <a
-                    href="question-bank.html"
-                    class="nav-item"
-                    data-section="question-bank"
-                >
-                    <i class="fa-solid fa-database"></i>
-                    <span>Question Bank</span>
-                </a>
+    href="live-monitor.html"
+    class="nav-item"
+    data-section="live-monitoring"
+>
+    <i class="fa-solid fa-video"></i>
+    <span>Live Monitoring</span>
+</a>
 
 
                 <p class="nav-title second-title">
@@ -171,7 +171,46 @@
                 <span>Logout</span>
             </button>
 
-        </aside><main class="main-content"><div class="portal-page"><div class="portal-top"><div><span class="welcome-small">EXAM MANAGEMENT</span><h1>Create Exam</h1><p>Create and publish a real exam for your students.</p></div><span class="portal-live">LIVE DATA</span></div><section class="portal-card"><form id="createForm" class="portal-form"><div class="portal-grid"><label>Title<input id="title" required></label><label>Subject<input id="subject" required></label><label>Course / Exam Code<input id="code" required></label><label>Duration (minutes)<input id="duration" type="number" min="1" value="30" required></label><label>Total Marks<input id="totalMarks" type="number" min="1" value="10" required></label><label>Status<select id="status"><option value="published">Publish Now</option><option value="draft">Save as Draft</option></select></label><label>Start Date & Time<input id="scheduledAt" type="datetime-local"></label>
+        </aside><main class="main-content"><div class="portal-page"><div class="portal-top"><div><span class="welcome-small">EXAM MANAGEMENT</span><h1>Create Exam</h1><p>Create and publish a real exam for your students.</p></div><span class="portal-live">LIVE DATA</span></div><section class="portal-card"><form id="createForm" class="portal-form"><div class="portal-grid">
+            <label>
+    Title
+    <input id="title" required>
+</label>
+
+<label>
+    Subject
+    <input id="subject" required>
+</label>
+
+<label id="examCodeLabel">
+    Course / Exam Code
+    <input id="code">
+</label>
+
+<label>Duration (minutes)<input id="duration" type="number" min="1" value="30" required></label><label>Total Marks<input id="totalMarks" type="number" min="1" value="10" required></label>
+<label>
+    Status
+    <select id="status">
+        <option value="published">Publish Now</option>
+        <option value="draft">Save as Draft</option>
+    </select>
+</label>
+
+<label>
+    Start Date & Time
+
+    <input
+        id="scheduledAt"
+        type="datetime-local"
+        required
+    >
+
+</label>
+
+<label>
+    Exam Expires At
+    <input id="calculatedEndTime" type="text" readonly placeholder="Automatically calculated">
+</label>
         <label>
     Institution Type
 

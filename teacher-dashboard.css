@@ -4182,7 +4182,50 @@ body::before, body::after { display:none !important; }
 }
 
 
+.live-monitor-exam-card {
+    align-items: center;
+}
 
+
+.live-monitor-exam-card small {
+    display: block;
+    margin-top: 6px;
+}
+
+
+.live-monitor-exam-card
+.management-card-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+
+.live-monitor-exam-card
+button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+
+.exam-status.live {
+    border-color: #22c55e;
+}
+
+
+.exam-status.upcoming {
+    border-color: #f59e0b;
+}
+
+
+.exam-status.completed {
+    border-color: #94a3b8;
+}
+
+
+.live-monitor-exam-card
+.secondary-action {
+    white-space: nowrap;
+}
 
 
 

@@ -163,9 +163,10 @@ function openSection(sectionName) {
         loadTeacherExams();
     }
 
-    if (sectionName === "question-bank") {
-        loadQuestionBank();
-    }
+   if (sectionName === "live-monitoring") {
+    window.location.href = "/live-monitoring.html";
+    return;
+}
 
     if (sectionName === "results") {
         loadTeacherResults();
@@ -476,11 +477,77 @@ function toDateTimeLocal(value) {
 }
 
 
-async function saveExam(event) {
+function updateCalculatedExamExpiry() {
 
-    event.preventDefault();
+    const startInput =
+        document.getElementById("examScheduledAt");
 
-    try {
+    const durationInput =
+        document.getElementById("examDuration");
+
+    const expiryInput =
+        document.getElementById("examSessionEndsAt");
+
+    if (!startInput || !durationInput || !expiryInput) {
+        return;
+    }
+
+    const startValue = startInput.value;
+
+    const duration =
+        Number(durationInput.value);
+
+    if (!startValue || !duration || duration < 1) {
+        expiryInput.value = "";
+        return;
+    }
+
+    const startDate =
+        new Date(startValue);
+
+    if (Number.isNaN(startDate.getTime())) {
+        expiryInput.value = "";
+        return;
+    }
+
+    const expiryDate =
+        new Date(
+            startDate.getTime() +
+            duration * 60 * 1000
+        );
+
+    const year =
+        expiryDate.getFullYear();
+
+    const month =
+        String(
+            expiryDate.getMonth() + 1
+        ).padStart(2, "0");
+
+    const day =
+        String(
+            expiryDate.getDate()
+        ).padStart(2, "0");
+
+    const hours =
+        String(
+            expiryDate.getHours()
+        ).padStart(2, "0");
+
+    const minutes =
+        String(
+            expiryDate.getMinutes()
+        ).padStart(2, "0");
+
+    expiryInput.value =
+        `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+event.preventDefault();
+
+try {
+
+    updateCalculatedExamExpiry();
 
         const questions = collectQuestions();
 
@@ -507,36 +574,177 @@ if (totalMarksInput) {
             throw new Error("Question marks must be greater than zero.");
         }
 
+
+        let targetGroup;
+
+const institutionType =
+    document.getElementById(
+        "examInstitutionType"
+    )?.value || "";
+
+const institutionName =
+    document.getElementById(
+        "examInstitutionName"
+    )?.value.trim() || "";
+
+
+if (!institutionType) {
+    throw new Error(
+        "Please select School or College / University."
+    );
+}
+
+
+if (!institutionName) {
+    throw new Error(
+        "Please enter the institution name."
+    );
+}
+
+
+/* =========================================
+   SCHOOL
+========================================= */
+
+if (
+    institutionType === "school"
+) {
+
+    const schoolClass =
+        document.getElementById(
+            "examSchoolClass"
+        )?.value || "";
+
+    const schoolSection =
+        document.getElementById(
+            "examSchoolSection"
+        )?.value || "";
+
+
+    if (
+        !schoolClass ||
+        !schoolSection
+    ) {
+        throw new Error(
+            "Please select the school class and section."
+        );
+    }
+
+
+    targetGroup = {
+
+        institutionType:
+            "school",
+
+        institutionName,
+
+        schoolClass,
+
+        year: "",
+
+        course: "",
+
+        section:
+            schoolSection
+
+    };
+
+}
+
+
+/* =========================================
+   COLLEGE / UNIVERSITY
+========================================= */
+
+else if (
+    institutionType === "college"
+) {
+
+    const semester =
+        document.getElementById(
+            "examSemester"
+        )?.value || "";
+
+    const course =
+        document.getElementById(
+            "examCourse"
+        )?.value.trim() || "";
+
+    const section =
+        document.getElementById(
+            "examCollegeSection"
+        )?.value || "";
+
+
+    if (
+        !semester ||
+        !course ||
+        !section
+    ) {
+        throw new Error(
+            "Please select the semester, enter the course and select the section."
+        );
+    }
+
+
+    targetGroup = {
+
+        institutionType:
+            "college",
+
+        institutionName,
+
+        schoolClass: "",
+
+        year:
+            semester,
+
+        course,
+
+        section
+
+    };
+
+}
+
         const payload = {
-            title:
-                document.getElementById("examTitle").value.trim(),
+    title:
+        document.getElementById("examTitle").value.trim(),
 
-            subject:
-                document.getElementById("examSubject").value.trim(),
+    subject:
+        document.getElementById("examSubject").value.trim(),
 
-            code:
-                document.getElementById("examCode").value.trim(),
+    code:
+        document.getElementById("examCode").value.trim(),
 
-            duration:
-                Number(document.getElementById("examDuration").value),
+    duration:
+        Number(
+            document.getElementById(
+                "examDuration"
+            ).value
+        ),
 
-            totalMarks,
+    totalMarks,
 
-            status:
-                document.getElementById("examStatus").value,
+    status:
+        document.getElementById(
+            "examStatus"
+        ).value,
 
-            scheduledAt:
-    document.getElementById(
-        "examScheduledAt"
-    ).value,
+    scheduledAt:
+        document.getElementById(
+            "examScheduledAt"
+        ).value,
 
-sessionEndsAt:
-    document.getElementById(
-        "examSessionEndsAt"
-    ).value,
+    sessionEndsAt:
+        document.getElementById(
+            "examSessionEndsAt"
+        ).value,
 
-            questions
-        };
+    targetGroup,
+
+    questions
+};
 
         if (
     !payload.title ||
@@ -596,7 +804,6 @@ sessionEndsAt:
 
     }
 
-}
 
 
 async function loadTeacherDashboardStats() {
@@ -637,13 +844,21 @@ async function loadTeacherExams() {
             throw new Error("Could not load exams.");
         }
 
-        const data = await response.json();
-        teacherExams = data.exams || [];
+        const data =
+    await response.json();
 
-        renderTeacherExams();
-        renderRecentTeacherExams();
-        renderTeacherUpcoming();
-        updateTeacherStats();
+teacherExams =
+    data.exams || [];
+
+renderTeacherExams();
+
+renderTeacherLiveMonitoring();
+
+renderRecentTeacherExams();
+
+renderTeacherUpcoming();
+
+updateTeacherStats();
 
     } catch (error) {
 
@@ -1028,8 +1243,251 @@ function openLiveMonitor(id) {
 }
 
 
+function openLiveMonitoringFromSidebar() {
+
+    window.location.href =
+        "/live-monitoring.html";
+
+}
+
+function renderTeacherLiveMonitoring() {
+
+    const container =
+        document.getElementById(
+            "teacherLiveMonitoringList"
+        );
+
+    if (!container) {
+        return;
+    }
+
+
+    if (!teacherExams.length) {
+
+        container.innerHTML = `
+            <div class="empty-state">
+
+                <i class="fa-solid fa-video-slash"></i>
+
+                <h3>
+                    No exams available
+                </h3>
+
+                <p>
+                    Create an exam first to use Live Monitoring.
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    const now =
+        Date.now();
+
+
+    container.innerHTML =
+        teacherExams
+            .map(exam => {
+
+                const startTime =
+                    exam.scheduledAt
+                        ? new Date(
+                            exam.scheduledAt
+                        ).getTime()
+                        : NaN;
+
+
+                const endTime =
+                    exam.sessionEndsAt
+                        ? new Date(
+                            exam.sessionEndsAt
+                        ).getTime()
+                        : NaN;
+
+
+                let state =
+                    "Upcoming";
+
+
+                let stateClass =
+                    "upcoming";
+
+
+                if (
+                    exam.status !==
+                    "published"
+                ) {
+
+                    state =
+                        "Draft";
+
+                    stateClass =
+                        "draft";
+
+                } else if (
+                    Number.isFinite(startTime) &&
+                    Number.isFinite(endTime) &&
+                    now >= startTime &&
+                    now <= endTime
+                ) {
+
+                    state =
+                        "LIVE NOW";
+
+                    stateClass =
+                        "live";
+
+                } else if (
+                    Number.isFinite(endTime) &&
+                    now > endTime
+                ) {
+
+                    state =
+                        "Completed";
+
+                    stateClass =
+                        "completed";
+
+                } else if (
+                    exam.status ===
+                    "published"
+                ) {
+
+                    state =
+                        "Upcoming";
+
+                    stateClass =
+                        "upcoming";
+
+                }
+
+
+                const schedule =
+                    exam.scheduledAt
+                        ? new Date(
+                            exam.scheduledAt
+                        ).toLocaleString()
+                        : "Schedule not set";
+
+
+                const sessionEnd =
+                    exam.sessionEndsAt
+                        ? new Date(
+                            exam.sessionEndsAt
+                        ).toLocaleString()
+                        : "End time not set";
+
+
+                const monitorDisabled =
+                    exam.status !==
+                    "published";
+
+
+                return `
+
+                    <div
+                        class="management-card live-monitor-exam-card"
+                    >
+
+                        <div>
+
+                            <span
+                                class="card-label"
+                            >
+                                ${escapeHtml(
+                                    exam.subject || "Exam"
+                                )}
+                            </span>
+
+
+                            <h3>
+                                ${escapeHtml(
+                                    exam.title || "Untitled Exam"
+                                )}
+                            </h3>
+
+
+                            <p>
+                                ${escapeHtml(
+                                    exam.code || ""
+                                )}
+                                •
+                                ${exam.questionCount || 0}
+                                Questions
+                                •
+                                ${exam.totalMarks || 0}
+                                Marks
+                                •
+                                ${exam.duration || 0}
+                                Minutes
+                            </p>
+
+
+                            <small>
+                                Starts:
+                                ${escapeHtml(schedule)}
+                            </small>
+
+
+                            <small>
+                                Ends:
+                                ${escapeHtml(sessionEnd)}
+                            </small>
+
+                        </div>
+
+
+                        <div
+                            class="management-card-actions"
+                        >
+
+                            <span
+                                class="exam-status ${stateClass}"
+                            >
+                                ${state}
+                            </span>
+
+
+                            <button
+                                type="button"
+                                class="secondary-action"
+                                ${
+                                    monitorDisabled
+                                        ? "disabled"
+                                        : ""
+                                }
+                                onclick="
+                                    openLiveMonitor(
+                                        '${exam.id}'
+                                    )
+                                "
+                            >
+
+                                <i
+                                    class="fa-solid fa-video"
+                                ></i>
+
+                                Monitor
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            })
+            .join("");
+
+}
+
 
 function editExam(id) {
+
 
     const exam =
         teacherExams.find(item => String(item.id) === String(id));
@@ -1121,64 +1579,6 @@ async function deleteExam(id) {
     }
 
 }
-
-
-/* =========================================
-   QUESTION BANK
-========================================= */
-
-async function loadQuestionBank() {
-
-    if (!teacherExams.length) {
-        await loadTeacherExams();
-    }
-
-    const container =
-        document.getElementById("questionBankList");
-
-    if (!container) return;
-
-    const questions = [];
-
-    teacherExams.forEach(exam => {
-        (exam.questions || []).forEach((question, index) => {
-            questions.push({
-                ...question,
-                examTitle: exam.title,
-                questionNumber: index + 1
-            });
-        });
-    });
-
-    if (!questions.length) {
-        container.innerHTML =
-            `<div class="empty-state">Your saved questions will appear here after you create an exam.</div>`;
-        return;
-    }
-
-    container.innerHTML =
-        questions.map(question => `
-            <div class="question-bank-card">
-                <div>
-                    <span class="card-label">
-                        ${escapeHtml(question.examTitle)} • Question ${question.questionNumber}
-                    </span>
-                    <h3>${escapeHtml(question.text)}</h3>
-                    <p>
-                        A. ${escapeHtml(question.options[0])}<br>
-                        B. ${escapeHtml(question.options[1])}<br>
-                        C. ${escapeHtml(question.options[2])}<br>
-                        D. ${escapeHtml(question.options[3])}
-                    </p>
-                </div>
-                <span class="correct-answer">
-                    Correct: ${String.fromCharCode(65 + Number(question.correctAnswer))}
-                </span>
-            </div>
-        `).join("");
-
-}
-
 
 /* =========================================
    RESULTS
@@ -1562,6 +1962,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     });
 
+
     const examForm =
         document.getElementById("examForm");
 
@@ -1569,37 +1970,106 @@ document.addEventListener("DOMContentLoaded", async () => {
         examForm.addEventListener("submit", saveExam);
     }
 
+
+    /* =========================================
+       AUTOMATIC EXAM EXPIRY
+    ========================================= */
+
+    const examStartInput =
+        document.getElementById(
+            "examScheduledAt"
+        );
+
+    const examDurationInput =
+        document.getElementById(
+            "examDuration"
+        );
+
+    if (examStartInput) {
+
+        examStartInput.addEventListener(
+            "input",
+            updateCalculatedExamExpiry
+        );
+
+        examStartInput.addEventListener(
+            "change",
+            updateCalculatedExamExpiry
+        );
+    }
+
+    if (examDurationInput) {
+
+        examDurationInput.addEventListener(
+            "input",
+            updateCalculatedExamExpiry
+        );
+
+        examDurationInput.addEventListener(
+            "change",
+            updateCalculatedExamExpiry
+        );
+    }
+
+    updateCalculatedExamExpiry();
+
+
     const confirmDelete =
-        document.getElementById("confirmDeleteSetting");
+        document.getElementById(
+            "confirmDeleteSetting"
+        );
 
     const toastSetting =
-        document.getElementById("toastSetting");
+        document.getElementById(
+            "toastSetting"
+        );
 
     if (confirmDelete) {
-        confirmDelete.checked =
-            localStorage.getItem("teacherConfirmDelete") !== "false";
 
-        confirmDelete.addEventListener("change", () => {
-            localStorage.setItem(
-                "teacherConfirmDelete",
-                String(confirmDelete.checked)
-            );
-        });
+        confirmDelete.checked =
+            localStorage.getItem(
+                "teacherConfirmDelete"
+            ) !== "false";
+
+        confirmDelete.addEventListener(
+            "change",
+            () => {
+
+                localStorage.setItem(
+                    "teacherConfirmDelete",
+                    String(
+                        confirmDelete.checked
+                    )
+                );
+
+            }
+        );
     }
 
     if (toastSetting) {
-        toastSetting.checked =
-            localStorage.getItem("teacherToast") !== "false";
 
-        toastSetting.addEventListener("change", () => {
-            localStorage.setItem(
-                "teacherToast",
-                String(toastSetting.checked)
-            );
-        });
+        toastSetting.checked =
+            localStorage.getItem(
+                "teacherToast"
+            ) !== "false";
+
+        toastSetting.addEventListener(
+            "change",
+            () => {
+
+                localStorage.setItem(
+                    "teacherToast",
+                    String(
+                        toastSetting.checked
+                    )
+                );
+
+            }
+        );
     }
 
     await loadTeacher();
+
     await loadTeacherDashboardStats();
 
     const questionContainer =
@@ -1609,9 +2079,24 @@ document.addEventListener("DOMContentLoaded", async () => {
         addQuestion();
     }
 
-    await loadTeacherExams();
-    await loadTeacherResults();
-    await loadTeacherPerformance();
+   await loadTeacherExams();
+
+const initialSection =
+    new URLSearchParams(
+        window.location.search
+    ).get("section");
+
+if (
+    initialSection ===
+    "live-monitoring"
+) {
+    openSection(
+        "live-monitoring"
+    );
+}
+
+await loadTeacherResults();
+await loadTeacherPerformance();
 
     window.clearInterval(window.teacherRealtimeTimer);
     window.teacherRealtimeTimer = window.setInterval(async () => {

@@ -90,50 +90,43 @@
 
 
                 <a
-                    href="teacher-dashboard.html"
-                    class="nav-item"
-                    data-section="dashboard" active"
-                >
-                    <i class="fa-solid fa-chart-pie"></i>
-                    <span>Dashboard</span>
-                </a>
+    href="#"
+    class="nav-item"
+    data-section="dashboard"
+>
+    <i class="fa-solid fa-chart-pie"></i>
+    <span>Dashboard</span>
+</a>
 
 
-                <a
-                    href="create-exam.html"
-                    class="nav-item"
-                    data-section="create-exam"
-                >
-                    <i class="fa-solid fa-circle-plus"></i>
-                    <span>Create Exam</span>
-                </a>
+<a
+    href="create-exam.html"
+    class="nav-item"
+    data-section="create-exam"
+>
+    <i class="fa-solid fa-circle-plus"></i>
+    <span>Create Exam</span>
+</a>
 
 
-                <a
-                    href="manage-exams.html"
-                    class="nav-item"
-                    data-section="my-exams"
-                >
-                    <i class="fa-solid fa-file-lines"></i>
-                    <span>My Exams</span>
-                </a>
+<a
+    href="#"
+    class="nav-item"
+    data-section="my-exams"
+>
+    <i class="fa-solid fa-file-lines"></i>
+    <span>My Exams</span>
+</a>
 
 
-                <a
-    href="live-monitor.html"
+<a
+    href="#"
     class="nav-item"
     data-section="live-monitoring"
 >
     <i class="fa-solid fa-video"></i>
     <span>Live Monitoring</span>
 </a>
-
-
-                
-                    <i class="fa-solid fa-database"></i>
-                    <span>Question Bank</span>
-                </a>
-
 
                 <p class="nav-title second-title">
                     MANAGEMENT
@@ -256,12 +249,12 @@
                         </p>
 
                         <button
-                            class="hero-button"
-                            onclick="openSection('create-exam')"
-                        >
-                            <i class="fa-solid fa-plus"></i>
-                            Create New Exam
-                        </button>
+    class="hero-button"
+    onclick="window.location.href='create-exam.html'"
+>
+    <i class="fa-solid fa-plus"></i>
+    Create New Exam
+</button>
 
                     </div>
 
@@ -611,21 +604,6 @@
 
 
                             <button
-                                onclick="openSection('question-bank')"
-                            >
-                                <span class="quick-icon blue">
-                                    <i class="fa-solid fa-database"></i>
-                                </span>
-
-                                <span>
-                                    Question Bank
-                                </span>
-
-                                <i class="fa-solid fa-arrow-right"></i>
-                            </button>
-
-
-                            <button
                                 onclick="openSection('results')"
                             >
                                 <span class="quick-icon cyan">
@@ -728,11 +706,6 @@
                                 </select>
                             </label>
 
-                            <label class="full-width">
-                                Start Date & Time (optional)
-                                <input id="examScheduledAt" type="datetime-local">
-                                <small>Leave empty to make a published exam available immediately.</small>
-                            </label>
 
                             <label>
     Exam Start Date & Time
@@ -748,38 +721,160 @@
 
 <label>
 
-    Exam Session End Date & Time
+    Exam Expires At
 
     <input
         id="examSessionEndsAt"
         type="datetime-local"
-        required
+        readonly
     >
 
     <small>
-        After this time, no student can continue the exam.
+        Automatically calculated from Start Date & Time + Duration.
     </small>
 
 </label>
 
 
-<label class="full-width">
+<label>
+    Institution Type
 
-    Target Class / Semester / Section
-
-    <select id="examClassGroup" required>
-
+    <select
+        id="examInstitutionType"
+        required
+    >
         <option value="">
-            Select Class / Semester / Section
+            Select Institution Type
         </option>
 
+        <option value="school">
+            School
+        </option>
+
+        <option value="college">
+            College / University
+        </option>
     </select>
-
-    <small>
-        Only students in the selected class, semester and section can see this exam.
-    </small>
-
 </label>
+
+
+<label>
+    Institution Name
+
+    <input
+        id="examInstitutionName"
+        type="text"
+        placeholder="Enter School / College / University"
+        required
+    >
+</label>
+
+
+<label
+    id="examSchoolClassLabel"
+    hidden
+>
+    Class
+
+    <select id="examSchoolClass">
+        <option value="">
+            Select Class
+        </option>
+
+        <option value="1">Class 1</option>
+        <option value="2">Class 2</option>
+        <option value="3">Class 3</option>
+        <option value="4">Class 4</option>
+        <option value="5">Class 5</option>
+        <option value="6">Class 6</option>
+        <option value="7">Class 7</option>
+        <option value="8">Class 8</option>
+        <option value="9">Class 9</option>
+        <option value="10">Class 10</option>
+        <option value="11">Class 11</option>
+        <option value="12">Class 12</option>
+    </select>
+</label>
+
+
+<label
+    id="examSchoolSectionLabel"
+    hidden
+>
+    Section
+
+    <select id="examSchoolSection">
+        <option value="">
+            Select Section
+        </option>
+
+        <option value="A">Section A</option>
+        <option value="B">Section B</option>
+        <option value="C">Section C</option>
+        <option value="D">Section D</option>
+    </select>
+</label>
+
+
+<label
+    id="examSemesterLabel"
+    hidden
+>
+    Semester
+
+    <select id="examSemester">
+        <option value="">
+            Select Semester
+        </option>
+
+        <option value="1">1st Semester</option>
+        <option value="2">2nd Semester</option>
+        <option value="3">3rd Semester</option>
+        <option value="4">4th Semester</option>
+        <option value="5">5th Semester</option>
+        <option value="6">6th Semester</option>
+        <option value="7">7th Semester</option>
+        <option value="8">8th Semester</option>
+    </select>
+</label>
+
+
+<label
+    id="examCourseLabel"
+    hidden
+>
+    Course / Branch
+
+    <input
+        id="examCourse"
+        type="text"
+        placeholder="CSE, ECE, BCA..."
+    >
+</label>
+
+
+<label
+    id="examCollegeSectionLabel"
+    hidden
+>
+    Section
+
+    <select id="examCollegeSection">
+        <option value="">
+            Select Section
+        </option>
+
+        <option value="A">Section A</option>
+        <option value="B">Section B</option>
+        <option value="C">Section C</option>
+        <option value="D">Section D</option>
+    </select>
+</label>
+
+<small class="full-width">
+    Only students belonging to the selected institution,
+    class/semester, course and section can access this exam.
+</small>
 
 
                         </div>
@@ -817,34 +912,42 @@
             </section>
 
 
-            <section class="content-section" id="my-examsSection">
+            <section
+    class="content-section"
+    id="live-monitoringSection"
+>
 
-                <div class="page-heading">
-                    <span class="welcome-small">EXAM MANAGEMENT</span>
-                    <h1>My Exams</h1>
-                    <p>Manage exams you created, publish drafts, edit questions, or remove an exam.</p>
-                </div>
+    <div class="section-header">
 
-                <div class="functional-panel">
-                    <div id="teacherExamsList" class="management-list"></div>
-                </div>
+        <div>
+            <span class="section-kicker">
+                EXAMSECURE
+            </span>
 
-            </section>
+            <h2>
+                Live Monitoring
+            </h2>
+
+            <p>
+                Select an exam to monitor students in real time.
+            </p>
+        </div>
+
+    </div>
 
 
-            <section class="content-section" id="question-bankSection">
+    <div
+        id="teacherLiveMonitoringList"
+        class="management-list"
+    >
 
-                <div class="page-heading">
-                    <span class="welcome-small">QUESTION MANAGEMENT</span>
-                    <h1>Question Bank</h1>
-                    <p>Questions saved inside your exams are shown here.</p>
-                </div>
+        <div class="empty-state">
+            Loading your exams...
+        </div>
 
-                <div class="functional-panel">
-                    <div id="questionBankList" class="management-list"></div>
-                </div>
+    </div>
 
-            </section>
+</section>
 
 
             <section class="content-section" id="resultsSection">
@@ -973,7 +1076,6 @@
     </div>
 
 
-    <script src="teacher-dashboard.js"></script>
-
+<script src="teacher-dashboard.js"></script>
 </body>
 </html>

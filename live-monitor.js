@@ -4,6 +4,17 @@ const examId =
     ).get("examId");
 
 
+    console.log(
+    "LIVE MONITOR URL:",
+    window.location.href
+);
+
+console.log(
+    "LIVE MONITOR EXAM ID:",
+    examId
+);
+
+
 let teacherUser = null;
 
 let monitorSocket = null;
@@ -19,6 +30,109 @@ const pendingCandidates =
 
 const pendingOffers =
     new Map();    
+
+    const SECURITY_ALERT_TYPES =
+    new Set([
+        "TAB_SWITCH",
+        "FULLSCREEN_EXIT",
+        "CAMERA_DISCONNECTED",
+        "MICROPHONE_DISCONNECTED",
+        "FACE_MISSING",
+        "MULTIPLE_PERSONS",
+        "PHONE_DETECTED",
+        "AUDIO_ACTIVITY",
+        "WINDOW_BLUR"
+    ]);
+
+
+function updateMonitorCounts() {
+
+    let joined = 0;
+    let submitted = 0;
+
+    const alertStudents =
+        new Set();
+
+    students.forEach(
+        attempt => {
+
+            if (
+                !attempt ||
+                !attempt.attemptId
+            ) {
+                return;
+            }
+
+            joined++;
+
+            if (
+                attempt.status ===
+                    "submitted" ||
+                attempt.status ===
+                    "auto-submitted"
+            ) {
+                submitted++;
+            }
+
+            if (
+                Number(
+                    attempt.violationCount ||
+                    0
+                ) > 0
+            ) {
+
+                alertStudents.add(
+                    String(
+                        attempt.studentId ||
+                        attempt.attemptId
+                    )
+                );
+
+            }
+
+        }
+    );
+
+
+    const joinedElement =
+        document.getElementById(
+            "joinedCount"
+        );
+
+    if (joinedElement) {
+
+        joinedElement.textContent =
+            joined;
+
+    }
+
+
+    const submittedElement =
+        document.getElementById(
+            "submittedCount"
+        );
+
+    if (submittedElement) {
+
+        submittedElement.textContent =
+            submitted;
+
+    }
+
+
+    const alertElement =
+        document.getElementById(
+            "alertCount"
+        );
+
+    if (alertElement) {
+
+        alertElement.textContent =
+            alertStudents.size;
+
+    }
+
+}
 
 let teacherVoiceStream = null;
 
@@ -207,6 +321,7 @@ async function loadLiveData() {
 
     }
 
+
     const data =
         await api(
             `/api/teacher/exams/${encodeURIComponent(examId)}/live`
@@ -230,21 +345,9 @@ async function loadLiveData() {
 
 
     document.getElementById(
-        "expectedCount"
-    ).textContent =
-        data.stats.registered || 0;
-
-
-    document.getElementById(
         "joinedCount"
     ).textContent =
         data.stats.joined || 0;
-
-
-    document.getElementById(
-        "activeCount"
-    ).textContent =
-        data.stats.active || 0;
 
 
     document.getElementById(
@@ -264,15 +367,32 @@ async function loadLiveData() {
     ).forEach(
         attempt => {
 
-            students.set(
+            const key =
                 String(
                     attempt.attemptId
-                ),
-                attempt
+                );
+
+
+            const current =
+                students.get(
+                    key
+                ) || {};
+
+
+            const merged = {
+                ...current,
+                ...attempt
+            };
+
+
+            students.set(
+                key,
+                merged
             );
 
+
             renderStudentCard(
-                attempt
+                merged
             );
 
         }
@@ -282,6 +402,8 @@ async function loadLiveData() {
     renderAlerts(
         data.events || []
     );
+
+    updateMonitorCounts();
 
 
     updateLiveIndicator(
@@ -331,10 +453,6 @@ function updateLiveIndicator(
 }
 
 
-/* =========================================================
-   STUDENT CARD
-========================================================= */
-
 function renderStudentCard(
     attempt
 ) {
@@ -346,6 +464,16 @@ function renderStudentCard(
 
     if (!grid) {
         return;
+    }
+
+
+    const emptyState =
+        document.getElementById(
+            "studentsEmptyState"
+        );
+
+    if (emptyState) {
+        emptyState.remove();
     }
 
 
@@ -374,6 +502,7 @@ function renderStudentCard(
         card.dataset.attemptId =
             key;
 
+
         card.innerHTML = `
 
             <div class="student-video-wrap">
@@ -385,12 +514,14 @@ function renderStudentCard(
                     muted
                 ></video>
 
-                <div
-                    class="student-offline"
-                    style="display:flex"
-                >
-                    Waiting for camera...
-                </div>
+
+               <div
+    class="student-offline"
+    style="display:flex"
+>
+    Waiting for camera and microphone...
+</div>
+
 
                 <div class="student-overlay">
 
@@ -452,6 +583,7 @@ function renderStudentCard(
                         Select
                     </button>
 
+
                     <button
                         type="button"
                         data-listen
@@ -460,28 +592,29 @@ function renderStudentCard(
                         Listen
                     </button>
 
+
                     <button
-    type="button"
-    data-speak
->
-    <i class="fa-solid fa-microphone"></i>
-    Speak
-</button>
+                        type="button"
+                        data-speak
+                    >
+                        <i class="fa-solid fa-microphone"></i>
+                        Speak
+                    </button>
 
                 </div>
 
             </div>
 
+
             <audio
                 class="monitor-audio"
-                autoplay
+                playsinline
             ></audio>
+
         `;
 
 
-        grid.appendChild(
-            card
-        );
+        grid.appendChild(card);
 
 
         const video =
@@ -499,126 +632,135 @@ function renderStudentCard(
         students.set(
             key,
             {
-                ...(
-                    students.get(key) ||
-                    {}
-                ),
-
+                ...(students.get(key) || {}),
                 ...attempt,
-
                 video,
-
                 audio
             }
         );
 
 
-        card.querySelector(
-            "[data-view]"
-        )
-            .addEventListener(
-                "click",
-                () => {
-
-                    selectStudent(
-                        attempt
-                    );
-
-                }
+        const viewButton =
+            card.querySelector(
+                "[data-view]"
             );
 
 
-        card.querySelector(
-            "[data-listen]"
-        )
-            .addEventListener(
+        const listenButton =
+            card.querySelector(
+                "[data-listen]"
+            );
+
+
+        const speakButton =
+            card.querySelector(
+                "[data-speak]"
+            );
+
+
+        if (viewButton) {
+
+            viewButton.addEventListener(
                 "click",
                 () => {
 
-                    listenToStudent(
-                        key
-                    );
+                    const current =
+                        students.get(key);
+
+                    if (current) {
+                        selectStudent(current);
+                    }
 
                 }
             );
-
-    }
-
-
-    card.querySelector(
-    "[data-speak]"
-)
-    .addEventListener(
-        "click",
-        async event => {
-
-            const button =
-                event.currentTarget;
-
-            if (
-                String(
-                    speakingAttemptId
-                ) ===
-                String(key)
-            ) {
-
-                stopTeacherVoice();
-
-                return;
-
-            }
-
-            try {
-
-                await startTeacherVoice(
-                    key,
-                    button
-                );
-
-            } catch (error) {
-
-                console.error(
-                    "Teacher voice:",
-                    error
-                );
-
-                stopTeacherVoice();
-
-                alert(
-                    error.message ||
-                    "Could not start the teacher microphone."
-                );
-
-            }
 
         }
-    );
+
+
+        if (listenButton) {
+
+            listenButton.addEventListener(
+                "click",
+                () => {
+
+                    listenToStudent(key);
+
+                }
+            );
+
+        }
+
+
+        if (speakButton) {
+
+            speakButton.addEventListener(
+                "click",
+                async event => {
+
+                    const button =
+                        event.currentTarget;
+
+
+                    if (
+                        String(
+                            speakingAttemptId
+                        ) ===
+                        String(key)
+                    ) {
+
+                        stopTeacherVoice();
+
+                        return;
+
+                    }
+
+
+                    try {
+
+                        await startTeacherVoice(
+                            key,
+                            button
+                        );
+
+                    } catch (error) {
+
+                        console.error(
+                            "Teacher voice:",
+                            error
+                        );
+
+                        stopTeacherVoice();
+
+                        alert(
+                            error.message ||
+                            "Could not start the teacher microphone."
+                        );
+
+                    }
+
+                }
+            );
+
+        }
+
+    }
 
 
     const current =
-        students.get(
-            key
-        );
+        students.get(key) || {};
 
 
-    if (current) {
+    const merged =
+        {
+            ...current,
+            ...attempt
+        };
 
-        current.status =
-            attempt.status;
 
-        current.cameraConnected =
-            attempt.cameraConnected;
-
-        current.microphoneConnected =
-            attempt.microphoneConnected;
-
-        current.fullscreenActive =
-            attempt.fullscreenActive;
-
-        current.violationCount =
-            attempt.violationCount;
-
-    }
+    students.set(
+        key,
+        merged
+    );
 
 
     const status =
@@ -663,6 +805,46 @@ function renderStudentCard(
         );
 
 
+    const isDisconnected =
+        attempt.status ===
+        "disconnected";
+
+
+    const hasAlerts =
+        Number(
+            attempt.violationCount || 0
+        ) > 0;
+
+
+    if (status) {
+
+        status.textContent =
+            isDisconnected
+                ? "Disconnected"
+                : hasAlerts
+                    ? "Warning"
+                    : (
+                        attempt.status ===
+                        "submitted" ||
+                        attempt.status ===
+                        "auto-submitted"
+                    )
+                        ? "Submitted"
+                        : "Normal";
+
+
+        status.className =
+            `student-status ${
+                isDisconnected
+                    ? "danger"
+                    : hasAlerts
+                        ? "warning"
+                        : ""
+            }`;
+
+    }
+
+
     if (name) {
 
         name.textContent =
@@ -677,39 +859,6 @@ function renderStudentCard(
         username.textContent =
             attempt.username ||
             "";
-
-    }
-
-
-    const isDisconnected =
-        attempt.status ===
-            "disconnected";
-
-
-    const hasAlerts =
-        Number(
-            attempt.violationCount ||
-            0
-        ) > 0;
-
-
-    if (status) {
-
-        status.textContent =
-            isDisconnected
-                ? "Disconnected"
-                : hasAlerts
-                    ? "Warning"
-                    : "Normal";
-
-        status.className =
-            `student-status ${
-                isDisconnected
-                    ? "danger"
-                    : hasAlerts
-                        ? "warning"
-                        : ""
-            }`;
 
     }
 
@@ -754,14 +903,45 @@ function renderStudentCard(
 
         alerts.textContent =
             `Alerts: ${
-                attempt.violationCount ||
-                0
+                attempt.violationCount || 0
             }`;
 
     }
 
-}
 
+    const offline =
+        card.querySelector(
+            ".student-offline"
+        );
+
+
+    if (
+        offline &&
+        attempt.status !==
+        "disconnected"
+    ) {
+
+        offline.style.display =
+            "flex";
+
+    }
+
+
+    if (
+        attempt.status ===
+        "submitted" ||
+        attempt.status ===
+        "auto-submitted"
+    ) {
+
+        if (offline) {
+            offline.style.display =
+                "none";
+        }
+
+    }
+
+}
 
 /* =========================================================
    SELECT STUDENT
@@ -843,7 +1023,7 @@ function selectStudent(
    LISTEN TO STUDENT
 ========================================================= */
 
-function listenToStudent(
+async function listenToStudent(
     attemptId
 ) {
 
@@ -853,6 +1033,8 @@ function listenToStudent(
         )
         .forEach(
             audio => {
+
+                audio.pause();
 
                 audio.muted =
                     true;
@@ -899,39 +1081,62 @@ function listenToStudent(
         );
 
 
-    if (audio) {
+    if (!audio) {
+    return;
+}
 
-        audio.muted =
-            false;
 
-        audio.volume =
-            1;
+const current =
+    students.get(
+        String(
+            attemptId
+        )
+    );
 
-        audio.play()
-            .catch(
-                error => {
+if (
+    current?.mediaStream &&
+    !audio.srcObject
+) {
 
-                    console.warn(
-                        "Audio playback:",
-                        error
-                    );
+    audio.srcObject =
+        current.mediaStream;
 
-                }
+}
+
+audio.muted =
+    false;
+
+audio.volume =
+    1;
+
+
+    try {
+
+        await audio.play();
+
+        if (button) {
+
+            button.classList.add(
+                "listen-active"
             );
 
-    }
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Student audio playback error:",
+            error
+        );
 
 
-    if (button) {
-
-        button.classList.add(
-            "listen-active"
+        alert(
+            "The student's microphone stream is not ready yet. Please wait a moment and click Listen again."
         );
 
     }
 
 }
-
 
 
 /* =========================================================
@@ -1273,6 +1478,7 @@ function attachMedia(
             studentSocketId
         );
 
+
     if (!peer) {
         return;
     }
@@ -1321,18 +1527,75 @@ function attachMedia(
         video.muted =
             true;
 
+        video.autoplay =
+            true;
+
+        video.playsInline =
+            true;
+
+        video.play().catch(
+            error => {
+
+                console.warn(
+                    "Student video playback:",
+                    error
+                );
+
+            }
+        );
+
     }
 
 
     if (audio) {
 
-        audio.srcObject =
-            stream;
+    audio.srcObject =
+        stream;
 
-        audio.muted =
-            true;
+    audio.muted =
+        false;
 
-    }
+    audio.autoplay =
+        true;
+
+    audio.playsInline =
+        true;
+
+    audio.volume =
+        1;
+
+    audio.setAttribute(
+        "playsinline",
+        ""
+    );
+
+    audio.play().catch(error => {
+
+        console.warn(
+            "Student microphone autoplay was blocked:",
+            error
+        );
+
+    });
+
+}
+
+    const current =
+        students.get(
+            attemptId
+        ) || {};
+
+
+    students.set(
+        attemptId,
+        {
+            ...current,
+            mediaStream:
+                stream,
+            video,
+            audio
+        }
+    );
 
 
     if (offline) {
@@ -1343,7 +1606,6 @@ function attachMedia(
     }
 
 }
-
 
 /* =========================================================
    CREATE TEACHER PEER
@@ -1382,49 +1644,77 @@ async function handleOffer(
         );
 
 
-    peerConnections.set(
-        fromSocketId,
-        {
+   peerConnections.set(
+    fromSocketId,
+    {
 
-            pc,
+        pc,
 
-            attemptId:
-                attempt?.attemptId
+        attemptId:
+            attempt?.attemptId,
 
-        }
-    );
+        mediaStream:
+            new MediaStream()
 
+    }
+);
 
-    pendingCandidates.set(
-        fromSocketId,
-        []
-    );
+   if (!pendingCandidates.has(fromSocketId)) {
+    pendingCandidates.set(fromSocketId, []);
+}
 
 
     pc.ontrack =
-        event => {
+    event => {
 
-            let stream =
-                event.streams &&
-                event.streams[0];
+        console.log(
+            "✅ Student media track received:",
+            event.track.kind,
+            "from:",
+            fromSocketId
+        );
 
-            if (!stream) {
-
-                stream =
-                    new MediaStream();
-
-                stream.addTrack(
-                    event.track
-                );
-
-            }
-
-            attachMedia(
-                fromSocketId,
-                stream
+        const peer =
+            peerConnections.get(
+                fromSocketId
             );
 
-        };
+        if (!peer) {
+            return;
+        }
+
+        if (
+            !peer.mediaStream
+        ) {
+
+            peer.mediaStream =
+                new MediaStream();
+
+        }
+
+        const alreadyAdded =
+            peer.mediaStream
+                .getTracks()
+                .some(
+                    track =>
+                        track.id ===
+                        event.track.id
+                );
+
+        if (!alreadyAdded) {
+
+            peer.mediaStream.addTrack(
+                event.track
+            );
+
+        }
+
+        attachMedia(
+            fromSocketId,
+            peer.mediaStream
+        );
+
+    };
 
 
     pc.onicecandidate =
@@ -1452,45 +1742,97 @@ async function handleOffer(
         };
 
 
-    pc.onconnectionstatechange =
-        () => {
+  pc.onconnectionstatechange =
+    () => {
 
-            const state =
-                pc.connectionState;
+        const state =
+            pc.connectionState;
 
-            console.log(
-                "Teacher WebRTC state:",
-                state
+
+        console.log(
+            "Teacher WebRTC state:",
+            state,
+            "student:",
+            attempt?.studentName,
+            "attempt:",
+            attempt?.attemptId
+        );
+
+
+        const card =
+            document.querySelector(
+                `[data-attempt-id="${attempt?.attemptId}"]`
             );
 
-            if (
-                state ===
-                    "failed" ||
-                state ===
-                    "closed"
-            ) {
 
-                const card =
-                    document.querySelector(
-                        `[data-attempt-id="${attempt?.attemptId}"]`
-                    );
+        const offline =
+            card?.querySelector(
+                ".student-offline"
+            );
 
-                const offline =
-                    card?.querySelector(
-                        ".student-offline"
-                    );
 
-                if (offline) {
+        if (
+    state === "connected"
+) {
 
-                    offline.style.display =
-                        "flex";
+    if (offline) {
 
-                }
+        offline.style.display =
+            "none";
+
+    }
+
+    const current =
+        students.get(
+            String(
+                attempt?.attemptId
+            )
+        );
+
+    if (
+        current?.mediaStream
+    ) {
+
+        attachMedia(
+            fromSocketId,
+            current.mediaStream
+        );
+
+    }
+
+    console.log(
+        "✅ Teacher connected to student camera + microphone:",
+        attempt?.studentName
+    );
+
+}
+
+
+        if (
+            state === "failed" ||
+            state === "disconnected" ||
+            state === "closed"
+        ) {
+
+            if (offline) {
+
+                offline.style.display =
+                    "flex";
+
+                offline.textContent =
+    "Camera or microphone connection lost...";
 
             }
 
-        };
+            console.warn(
+                "⚠️ Student media connection:",
+                state,
+                attempt?.studentName
+            );
 
+        }
+
+    };
 
     await pc.setRemoteDescription(
         offer
@@ -1593,61 +1935,73 @@ function connectMonitorSocket() {
                 attempt.attemptId
             );
 
-        students.set(
-            key,
-            attempt
-        );
-
-        renderStudentCard(
-            attempt
-        );
-
-        const pending =
-            pendingOffers.get(
-                key
-            );
-
-        if (!pending) {
-            return;
-        }
-
-        pendingOffers.delete(
-            key
-        );
-
         const current =
-            students.get(
-                key
-            );
+    students.get(
+        key
+    ) || {};
 
-        if (current) {
+const updated = {
+    ...current,
+    ...attempt
+};
 
-            current.socketId =
-                pending.fromSocketId;
+students.set(
+    key,
+    updated
+);
 
-            students.set(
-                key,
-                current
-            );
+renderStudentCard(
+    updated
+);
 
-        }
+updateMonitorCounts();
 
-        try {
+const pending =
+    pendingOffers.get(
+        key
+    );
 
-            await handleOffer(
-                pending.fromSocketId,
-                pending.offer,
-                current
-            );
+if (!pending) {
+    return;
+}
 
-        } catch (error) {
+pendingOffers.delete(
+    key
+);
 
-            console.error(
-                "Pending WebRTC offer error:",
-                error
-            );
+const joinedStudent =
+    students.get(
+        key
+    );
 
-        }
+if (joinedStudent) {
+
+    joinedStudent.socketId =
+        pending.fromSocketId;
+
+    students.set(
+        key,
+        joinedStudent
+    );
+
+}
+
+try {
+
+    await handleOffer(
+        pending.fromSocketId,
+        pending.offer,
+        joinedStudent
+    );
+
+} catch (error) {
+
+    console.error(
+        "Pending WebRTC offer error:",
+        error
+    );
+
+}
 
     }
 );
@@ -1715,8 +2069,6 @@ function connectMonitorSocket() {
     stopTeacherVoice();
 
 }
-
-
             const current =
                 students.get(
                     key
@@ -1738,20 +2090,20 @@ function connectMonitorSocket() {
 
 
             students.set(
-                key,
-                updated
-            );
+    key,
+    updated
+);
 
+renderStudentCard(
+    updated
+);
 
-            renderStudentCard(
-                updated
-            );
+updateMonitorCounts();
 
         }
     );
 
-
-            // =========================================
+        // =========================================
         // TEACHER VOICE ANSWER
         // =========================================
 
@@ -1845,6 +2197,11 @@ function connectMonitorSocket() {
         studentId,
         attemptId
     }) => {
+
+        console.log(
+            "📥 Teacher received WebRTC offer:",
+            fromSocketId
+        );
 
         if (
             !fromSocketId ||
@@ -2005,24 +2362,33 @@ function connectMonitorSocket() {
                 );
 
 
-            if (current) {
+            if (
+    current &&
+    SECURITY_ALERT_TYPES.has(
+        String(
+            event.type
+        )
+    )
+) {
 
-                current.violationCount =
-                    Number(
-                        current.violationCount ||
-                        0
-                    ) + 1;
+    current.violationCount =
+        Number(
+            current.violationCount ||
+            0
+        ) + 1;
 
-                students.set(
-                    key,
-                    current
-                );
+    students.set(
+        key,
+        current
+    );
 
-                renderStudentCard(
-                    current
-                );
+    renderStudentCard(
+        current
+    );
 
-            }
+}
+
+updateMonitorCounts();
 
 
             prependAlert(
@@ -2225,18 +2591,24 @@ document.addEventListener(
 
         try {
 
-            if (
-                !await authenticate()
-            ) {
-                return;
-            }
+    if (!examId) {
 
+        window.location.replace(
+            "/teacher-dashboard.html?section=live-monitoring"
+        );
 
-            await loadLiveData();
+        return;
+    }
 
+    if (
+        !await authenticate()
+    ) {
+        return;
+    }
 
-            connectMonitorSocket();
+    await loadLiveData();
 
+    connectMonitorSocket();
 
             document.getElementById(
                 "refreshMonitor"

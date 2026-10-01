@@ -1641,10 +1641,10 @@ const examSchema = new mongoose.Schema(
         },
 
         code: {
-            type: String,
-            required: true,
-            trim: true
-        },
+    type: String,
+    trim: true,
+    default: ""
+},
 
         duration: {
             type: Number,
@@ -1851,12 +1851,6 @@ const ExamAttempt =
         "ExamAttempt",
         attemptSchema
     );
-
-
-
-
-
-
 
 
 
@@ -2078,6 +2072,63 @@ app.get(
     }
 );
 
+const notificationSchema = new mongoose.Schema({
+
+    recipientId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+
+    role: {
+        type: String,
+        enum: ["student", "teacher"],
+        required: true
+    },
+
+    type: {
+        type: String,
+        required: true
+    },
+
+    title: {
+        type: String,
+        required: true
+    },
+
+    message: {
+        type: String,
+        required: true
+    },
+
+    icon: {
+        type: String,
+        default: "fa-bell"
+    },
+
+    relatedId: {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null
+    },
+
+    read: {
+        type: Boolean,
+        default: false
+    },
+
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+
+});
+
+const Notification =
+    mongoose.model(
+        "Notification",
+        notificationSchema
+    );
+
 
 
 async function createNotification({ recipientId, role, type, title, message, icon, relatedId }) {
@@ -2105,6 +2156,7 @@ function sanitizeExamForStudent(exam) {
         totalMarks: exam.totalMarks,
         status: exam.status,
         scheduledAt: exam.scheduledAt,
+        sessionEndsAt: exam.sessionEndsAt,
         availabilityDays: exam.availabilityDays,
         availableUntil: exam.availableUntil,
         questionCount: exam.questions.length,
@@ -2231,13 +2283,12 @@ app.post(
             // =====================================
 
             if (
-                !String(title || "").trim() ||
-                !String(subject || "").trim() ||
-                !String(code || "").trim() ||
-                !Number(duration) ||
-                !Array.isArray(questions) ||
-                questions.length === 0
-            ) {
+    !String(title || "").trim() ||
+    !String(subject || "").trim() ||
+    !Number(duration) ||
+    !Array.isArray(questions) ||
+    questions.length === 0
+) {
 
                 return res.status(400).json({
                     message:
@@ -2360,16 +2411,28 @@ else if (
 
 
     if (
-        !["school", "college"]
-            .includes(institutionType)
-    ) {
+    !["school", "college"]
+        .includes(institutionType)
+) {
 
-        return res.status(400).json({
-            message:
-                "Please select School or College / University."
-        });
+    return res.status(400).json({
+        message:
+            "Please select School or College / University."
+    });
 
-    }
+}
+
+if (
+    institutionType === "college" &&
+    !String(code || "").trim()
+) {
+
+    return res.status(400).json({
+        message:
+            "Course / Exam Code is required for College / University exams."
+    });
+
+}
 
 
     if (!normalizedInstitution) {
@@ -3874,18 +3937,38 @@ attempt.lastHeartbeat =
 
 await attempt.save();
 
-        await createNotification({
-            recipientId: exam.teacherId,
-            role: "teacher",
-            type: "examCompleted",
-            title: "Student submitted an exam",
-            message: `${req.user.fullname || "A student"} submitted ${exam.title} with ${result.percentage}%.`,
-            icon: "fa-check-circle",
-            relatedId: result._id
-        });
+io
+    .to(
+        `exam:${exam._id}:teacher`
+    )
+    .emit(
+        "student:status",
+        {
+            attemptId:
+                attempt._id,
 
-        await createNotification({
-            recipientId: req.user._id,
+            studentId:
+                req.user._id,
+
+            status:
+                attempt.status,
+
+            cameraConnected:
+                attempt.cameraConnected,
+
+            microphoneConnected:
+                attempt.microphoneConnected,
+
+            fullscreenActive:
+                attempt.fullscreenActive,
+
+            submittedAt:
+                attempt.submittedAt
+        }
+    );
+
+await createNotification({
+    recipientId: exam.teacherId,
             role: "student",
             type: "resultUpdated",
             title: "Result generated",
@@ -5704,22 +5787,37 @@ if (user?.role) {
             return;
         }
 
-        target.emit(
-            "webrtc:offer",
-            {
-                fromSocketId:
-                    socket.id,
+        console.log(
+    "📡 Server forwarding WebRTC offer:",
+    socket.id,
+    "→",
+    targetSocketId
+);
 
-                offer,
+console.log(
+    "📡 Server forwarding WebRTC offer:",
+    socket.id,
+    "→",
+    targetSocketId
+);
 
-                studentId:
-                    socket.data.studentId,
 
-                attemptId:
-                    socket.data.attemptId
-            }
-        );
+target.emit(
+    "webrtc:offer",
+    {
+        fromSocketId:
+            socket.id,
 
+        offer,
+
+        studentId:
+            socket.data.studentId,
+
+        attemptId:
+            socket.data.attemptId
+    }
+);
+        
     }
 );
 

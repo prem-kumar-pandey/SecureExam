@@ -702,12 +702,25 @@ async function startCamera() {
 
 
     cameraStream =
-        await navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode: "user"
+    await navigator.mediaDevices.getUserMedia({
+
+        video: {
+            facingMode: "user",
+            width: {
+                ideal: 1280
             },
-            audio: true
-        });
+            height: {
+                ideal: 720
+            }
+        },
+
+        audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+        }
+
+    });
 
 
     const video =
@@ -2209,13 +2222,19 @@ function getTeacherVoiceAudioElement() {
             "teacherVoiceAudio";
 
         audio.autoplay =
-            true;
+    true;
 
-        audio.playsInline =
-            true;
+audio.playsInline =
+    true;
 
-        audio.style.display =
-            "none";
+audio.muted =
+    false;
+
+audio.volume =
+    1;
+
+audio.style.display =
+    "none";
 
         document.body.appendChild(
             audio
@@ -2252,84 +2271,47 @@ async function handleTeacherVoiceOffer(
         );
 
 
-    teacherVoicePeerConnection.ontrack =
-        event => {
+   teacherVoicePeerConnection.ontrack =
+    event => {
 
-            const stream =
-                event.streams &&
-                event.streams[0]
-                    ? event.streams[0]
-                    : new MediaStream([
-                        event.track
-                    ]);
+        const stream =
+            event.streams &&
+            event.streams[0]
+                ? event.streams[0]
+                : new MediaStream([
+                    event.track
+                ]);
 
+        const audio =
+            getTeacherVoiceAudioElement();
 
-            if (
-                teacherVoiceAudioContext
-            ) {
+        audio.srcObject =
+            stream;
 
-                if (
-                    teacherVoiceAudioContext
-                        .state ===
-                    "suspended"
-                ) {
+        audio.autoplay =
+            true;
 
-                    teacherVoiceAudioContext
-                        .resume()
-                        .catch(
-                            console.warn
-                        );
+        audio.playsInline =
+            true;
 
-                }
+        audio.muted =
+            false;
 
-                if (
-                    teacherVoiceAudioSource
-                ) {
+        audio.volume =
+            1;
 
-                    try {
+        audio.play().catch(
+            error => {
 
-                        teacherVoiceAudioSource
-                            .disconnect();
-
-                    } catch (error) {}
-
-                }
-
-                teacherVoiceAudioSource =
-                    teacherVoiceAudioContext
-                        .createMediaStreamSource(
-                            stream
-                        );
-
-                teacherVoiceAudioSource
-                    .connect(
-                        teacherVoiceAudioContext
-                            .destination
-                    );
-
-            } else {
-
-                const audio =
-                    getTeacherVoiceAudioElement();
-
-                audio.srcObject =
-                    stream;
-
-                audio.play().catch(
-                    error => {
-
-                        console.warn(
-                            "Teacher voice playback:",
-                            error
-                        );
-
-                    }
+                console.warn(
+                    "Teacher voice playback:",
+                    error
                 );
 
             }
+        );
 
-        };
-
+    };
 
     teacherVoicePeerConnection.onicecandidate =
         event => {
@@ -2526,16 +2508,24 @@ async function createStudentPeer(
         );
 
 
-    proctoringSocket.emit(
-        "webrtc:offer",
-        {
+    console.log(
+    "📤 Student sending WebRTC offer:",
+    targetSocketId
+);
 
-            targetSocketId,
+console.log(
+    "📤 Student sending WebRTC offer:",
+    targetSocketId
+);
 
-            offer
 
-        }
-    );
+proctoringSocket.emit(
+    "webrtc:offer",
+    {
+        targetSocketId,
+        offer
+    }
+);
 
 }
 
