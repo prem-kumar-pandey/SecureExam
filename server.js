@@ -1980,19 +1980,14 @@ app.get(
             // FIND TEACHER'S OWN GROUP
             // =========================================
 
-            const teacherGroup =
-                await ClassGroup.findById(
-                    req.user.classGroupId
-                );
+            let teacherGroup =
+    req.user.classGroupId
+        ? await ClassGroup.findById(
+            req.user.classGroupId
+        )
+        : null;
 
-
-            if (!teacherGroup) {
-
-                return res.json({
-                    groups: []
-                });
-
-            }
+let targetGroup = null;
 
 
             // =========================================
@@ -2153,6 +2148,24 @@ function sanitizeExamForStudent(exam) {
         subject: exam.subject,
         code: exam.code,
         duration: exam.duration,
+
+        targetGroup: exam.classGroupId
+    ? {
+        institutionType:
+            exam.classGroupId.institutionType || "",
+        institutionName:
+            exam.classGroupId.institutionName || "",
+        schoolClass:
+            exam.classGroupId.schoolClass || "",
+        year:
+            exam.classGroupId.year || "",
+        course:
+            exam.classGroupId.course || "",
+        section:
+            exam.classGroupId.section || ""
+    }
+    : null,
+
         totalMarks: exam.totalMarks,
         status: exam.status,
         scheduledAt: exam.scheduledAt,
@@ -2302,21 +2315,12 @@ app.post(
 // TARGET CLASS GROUP
 // =====================================
 
-const teacherGroup =
+let teacherGroup =
     req.user.classGroupId
         ? await ClassGroup.findById(
             req.user.classGroupId
         )
         : null;
-
-if (!teacherGroup) {
-
-    return res.status(403).json({
-        message:
-            "Your teacher account has no class group assigned."
-    });
-
-}
 
 let targetGroup = null;
 
@@ -2490,6 +2494,12 @@ if (
     // TEACHER INSTITUTION CHECK
     // =====================================
 
+    // =====================================
+// TEACHER INSTITUTION CHECK
+// =====================================
+
+if (teacherGroup) {
+
     const teacherInstitution =
         String(
             teacherGroup.institutionName ||
@@ -2513,6 +2523,7 @@ if (
 
     }
 
+}
 
     // =====================================
     // SAME KEY AS STUDENT SIGNUP
@@ -2659,6 +2670,27 @@ if (!targetGroup) {
         message:
             "Could not resolve the target class group."
     });
+
+}
+
+
+
+// =====================================
+// ASSIGN GROUP TO EXISTING TEACHER
+// =====================================
+
+if (!teacherGroup) {
+
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            classGroupId:
+                targetGroup._id
+        }
+    );
+
+    teacherGroup =
+        targetGroup;
 
 }
 
@@ -2959,16 +2991,41 @@ app.get("/api/teacher/exams", requireRole("teacher"), async (req, res) => {
     try {
 
         const exams = await Exam.find({
-            teacherId: req.user._id
-        }).sort({ createdAt: -1 });
+    teacherId: req.user._id
+})
+.populate(
+    "classGroupId",
+    "institutionType institutionName schoolClass year course section label"
+)
+.sort({
+    createdAt: -1
+});
 
-        res.json({
-            exams: exams.map(exam => ({
-                ...sanitizeExamForStudent(exam),
-                questions: exam.questions
-            }))
-        });
+       res.json({
+    exams: exams.map(exam => ({
+        ...sanitizeExamForStudent(exam),
 
+        targetGroup: exam.classGroupId
+            ? {
+                institutionType:
+                    exam.classGroupId.institutionType || "",
+                institutionName:
+                    exam.classGroupId.institutionName || "",
+                schoolClass:
+                    exam.classGroupId.schoolClass || "",
+                year:
+                    exam.classGroupId.year || "",
+                course:
+                    exam.classGroupId.course || "",
+                section:
+                    exam.classGroupId.section || ""
+            }
+            : null,
+
+        questions:
+            exam.questions
+    }))
+});
     } catch (error) {
 
         console.error("Teacher exams error:", error);
@@ -3078,6 +3135,102 @@ app.put(
                         : null;
             }
 
+// =====================================
+// UPDATE CLASS GROUP
+// =====================================
+if (req.body.targetGroup) {
+
+    const targetGroup =
+        req.body.targetGroup;
+
+    const institutionType =
+        String(
+            targetGroup.institutionType ||
+            ""
+        )
+        .trim()
+        .toLowerCase();
+
+    const normalizedInstitution =
+        String(
+            targetGroup.institutionName ||
+            ""
+        )
+        .trim()
+        .replace(/\s+/g, " ");
+
+    const normalizedClass =
+        institutionType === "school"
+            ? String(
+                targetGroup.schoolClass ||
+                ""
+            ).trim()
+            : "";
+
+    const normalizedYear =
+        institutionType === "college"
+            ? String(
+                targetGroup.year ||
+                ""
+            ).trim()
+            : "";
+
+    const normalizedCourse =
+        institutionType === "college"
+            ? String(
+                targetGroup.course ||
+                ""
+            )
+            .trim()
+            .replace(/\s+/g, " ")
+            .toUpperCase()
+            : "";
+
+    const normalizedSection =
+        String(
+            targetGroup.section ||
+            ""
+        )
+        .trim()
+        .toUpperCase();
+
+    const groupKey = [
+
+        institutionType,
+
+        normalizedInstitution
+            .toLowerCase(),
+
+        normalizedClass,
+
+        normalizedYear,
+
+        normalizedCourse
+            .toLowerCase(),
+
+        normalizedSection
+
+    ].join("|");
+
+    const classGroup =
+        await ClassGroup.findOne({
+            groupKey
+        });
+
+    if (!classGroup) {
+
+        return res.status(400).json({
+
+            message:
+                "Selected semester, course and section class group was not found."
+
+        });
+
+    }
+
+    exam.classGroupId =
+        classGroup._id;
+}
             // =====================================
             // NEW SCHEDULE VALIDATION
             // =====================================
@@ -3430,14 +3583,14 @@ app.post(
                     req.params.id
                 );
 
-            if (!exam) {
+           if (!exam) {
 
-                return res.status(404).json({
-                    message:
-                        "Exam not found."
-                });
+    return res.status(404).json({
+        message:
+            "Exam not found."
+    });
 
-
+}
 
 // =====================================
 // CLASS GROUP SECURITY CHECK
@@ -3458,8 +3611,6 @@ if (
     });
 
 }
-
-            }
 
             if (
                 exam.status !==
@@ -5742,86 +5893,132 @@ if (user?.role) {
         // =========================================
         // WEBRTC OFFER
         // =========================================
-
-       socket.on(
+socket.on(
     "webrtc:offer",
-    ({
+    async ({
         targetSocketId,
         offer
     }) => {
 
-        if (
-            socket.data.role !==
-            "student"
-        ) {
-            return;
-        }
+        try {
 
-        if (
-            !targetSocketId ||
-            !offer
-        ) {
-            return;
-        }
+            if (
+                socket.data.role !==
+                "student"
+            ) {
+                return;
+            }
 
-        const target =
-            io.sockets.sockets.get(
+
+            if (
+                !targetSocketId ||
+                !offer
+            ) {
+                return;
+            }
+
+
+            const target =
+                io.sockets.sockets.get(
+                    targetSocketId
+                );
+
+
+            if (!target) {
+
+                console.warn(
+                    "❌ Teacher socket not found:",
+                    targetSocketId
+                );
+
+                return;
+            }
+
+
+            /*
+             * Security:
+             * The target must actually be
+             * the teacher for this exam.
+             */
+            if (
+                target.data.role !==
+                "teacher"
+            ) {
+                return;
+            }
+
+
+            if (
+                target.data.examId !==
+                socket.data.examId
+            ) {
+                return;
+            }
+
+
+            const exam =
+                await Exam.findById(
+                    socket.data.examId
+                );
+
+
+            if (!exam) {
+                return;
+            }
+
+
+            if (
+                String(
+                    exam.teacherId
+                ) !==
+                String(
+                    target.data.userId
+                )
+            ) {
+                console.warn(
+                    "❌ WebRTC teacher ownership check failed."
+                );
+
+                return;
+            }
+
+
+            console.log(
+                "📡 Forwarding WebRTC offer:",
+                socket.id,
+                "→",
                 targetSocketId
             );
 
-        if (!target) {
-            return;
+
+            target.emit(
+                "webrtc:offer",
+                {
+                    fromSocketId:
+                        socket.id,
+
+                    offer,
+
+                    studentId:
+                        socket.data.studentId,
+
+                    attemptId:
+                        socket.data.attemptId
+                }
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "❌ WebRTC offer forwarding error:",
+                error
+            );
+
         }
 
-        if (
-            target.data.role !==
-            "teacher"
-        ) {
-            return;
-        }
-
-        if (
-            target.data.examId !==
-            socket.data.examId
-        ) {
-            return;
-        }
-
-        console.log(
-    "📡 Server forwarding WebRTC offer:",
-    socket.id,
-    "→",
-    targetSocketId
-);
-
-console.log(
-    "📡 Server forwarding WebRTC offer:",
-    socket.id,
-    "→",
-    targetSocketId
-);
-
-
-target.emit(
-    "webrtc:offer",
-    {
-        fromSocketId:
-            socket.id,
-
-        offer,
-
-        studentId:
-            socket.data.studentId,
-
-        attemptId:
-            socket.data.attemptId
     }
 );
-        
-    }
-);
-
-
         // =========================================
         // WEBRTC ANSWER
         // =========================================

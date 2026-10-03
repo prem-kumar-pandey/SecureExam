@@ -1912,32 +1912,55 @@ function startProctoringConnection() {
     );
 
 
-    proctoringSocket.on(
-        "teacher:available",
-        async ({
+   proctoringSocket.on(
+    "teacher:available",
+    async ({ socketId }) => {
+
+        if (!socketId) {
+            console.error(
+                "❌ Teacher socket ID missing."
+            );
+
+            return;
+        }
+
+
+        if (!cameraStream) {
+            console.error(
+                "❌ Camera/microphone stream is not ready."
+            );
+
+            return;
+        }
+
+
+        teacherSocketId =
+            socketId;
+
+
+        console.log(
+            "👨‍🏫 Teacher available:",
             socketId
-        }) => {
+        );
 
-            try {
 
-                teacherSocketId =
-                    socketId;
+        try {
 
-                await createStudentPeer(
-                    socketId
-                );
+            await createStudentPeer(
+                socketId
+            );
 
-            } catch (error) {
+        } catch (error) {
 
-                console.error(
-                    "Could not create student peer:",
-                    error
-                );
-
-            }
+            console.error(
+                "❌ Could not create student WebRTC peer:",
+                error
+            );
 
         }
-    );
+
+    }
+);
 
 
     proctoringSocket.on(
@@ -2420,23 +2443,29 @@ async function handleTeacherVoiceOffer(
    CREATE STUDENT PEER
 ========================================================= */
 
-async function createStudentPeer(
-    targetSocketId
-) {
+async function createStudentPeer(targetSocketId) {
 
     if (
         !cameraStream ||
-        !proctoringSocket
+        !proctoringSocket ||
+        !targetSocketId
     ) {
+        console.error(
+            "❌ Cannot create WebRTC peer:",
+            {
+                cameraStream: Boolean(cameraStream),
+                socket: Boolean(proctoringSocket),
+                targetSocketId
+            }
+        );
+
         return;
     }
 
 
     closeStudentPeer();
 
-
-    pendingIceCandidates =
-        [];
+    pendingIceCandidates = [];
 
 
     studentPeerConnection =
@@ -2445,37 +2474,90 @@ async function createStudentPeer(
         );
 
 
-    cameraStream
-        .getTracks()
-        .forEach(track => {
+    /*
+     * IMPORTANT:
+     * Send BOTH camera and microphone tracks.
+     */
+    const tracks =
+        cameraStream.getTracks();
 
-            studentPeerConnection.addTrack(
-                track,
-                cameraStream
-            );
+    console.log(
+        "🎥 Student media tracks:",
+        tracks.map(
+            track => ({
+                kind: track.kind,
+                state: track.readyState,
+                enabled: track.enabled
+            })
+        )
+    );
 
-        });
+
+    tracks.forEach(track => {
+
+        studentPeerConnection.addTrack(
+            track,
+            cameraStream
+        );
+
+    });
 
 
+    /*
+     * ICE candidates from student → teacher
+     */
     studentPeerConnection.onicecandidate =
         event => {
 
             if (
-                event.candidate &&
-                proctoringSocket &&
-                targetSocketId
+                !event.candidate ||
+                !proctoringSocket ||
+                !targetSocketId
+            ) {
+                return;
+            }
+
+
+            proctoringSocket.emit(
+                "webrtc:ice-candidate",
+                {
+                    targetSocketId,
+                    candidate:
+                        event.candidate
+                }
+            );
+
+        };
+
+
+    /*
+     * WebRTC connection state
+     */
+    studentPeerConnection
+        .onconnectionstatechange = () => {
+
+            if (!studentPeerConnection) {
+                return;
+            }
+
+
+            const state =
+                studentPeerConnection
+                    .connectionState;
+
+
+            console.log(
+                "📡 Student → Teacher WebRTC:",
+                state
+            );
+
+
+            if (
+                state === "failed"
             ) {
 
-                proctoringSocket.emit(
-                    "webrtc:ice-candidate",
-                    {
-
-                        targetSocketId,
-
-                        candidate:
-                            event.candidate
-
-                    }
+                console.error(
+                    "❌ Student WebRTC connection failed."
                 );
 
             }
@@ -2483,24 +2565,14 @@ async function createStudentPeer(
         };
 
 
-    studentPeerConnection.onconnectionstatechange =
-        () => {
-
-            const state =
-                studentPeerConnection
-                    .connectionState;
-
-            console.log(
-                "Student WebRTC state:",
-                state
-            );
-
-        };
-
-
+    /*
+     * Create offer containing
+     * camera + microphone tracks.
+     */
     const offer =
         await studentPeerConnection
             .createOffer();
+
 
     await studentPeerConnection
         .setLocalDescription(
@@ -2509,23 +2581,18 @@ async function createStudentPeer(
 
 
     console.log(
-    "📤 Student sending WebRTC offer:",
-    targetSocketId
-);
-
-console.log(
-    "📤 Student sending WebRTC offer:",
-    targetSocketId
-);
+        "📤 Sending student camera + microphone offer to teacher:",
+        targetSocketId
+    );
 
 
-proctoringSocket.emit(
-    "webrtc:offer",
-    {
-        targetSocketId,
-        offer
-    }
-);
+    proctoringSocket.emit(
+        "webrtc:offer",
+        {
+            targetSocketId,
+            offer
+        }
+    );
 
 }
 

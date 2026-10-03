@@ -338,7 +338,6 @@ async function loadStudentExams() {
 
 }
 
-
 function renderAvailableExams() {
 
     const grid =
@@ -346,15 +345,39 @@ function renderAvailableExams() {
 
     if (!grid) return;
 
-    const exams =
-    (studentExams.available || [])
-        .filter(exam => !exam.attempted);
+
+    // =========================================
+    // AVAILABLE + UPCOMING EXAMS
+    // =========================================
+
+    const availableExams =
+        (studentExams.available || [])
+            .filter(exam => !exam.attempted);
+
+    const upcomingExams =
+        (studentExams.upcoming || [])
+            .filter(exam => !exam.attempted);
+
+
+    const exams = [
+        ...upcomingExams,
+        ...availableExams
+    ];
+
+
+    // Sort by scheduled time
+    exams.sort(
+        (a, b) =>
+            new Date(a.scheduledAt || 0) -
+            new Date(b.scheduledAt || 0)
+    );
+
 
     if (!exams.length) {
 
         grid.innerHTML =
             `<div class="student-empty-state">
-                No published exams are available right now.
+                No published exams are available yet.
                 <br>
                 Your teacher's published exams will appear here automatically.
             </div>`;
@@ -362,6 +385,179 @@ function renderAvailableExams() {
         return;
     }
 
+
+    grid.innerHTML =
+        exams.map(exam => {
+
+            const attempted =
+                exam.attempted;
+
+            const isUpcoming =
+                upcomingExams.some(
+                    item =>
+                        String(item.id) ===
+                        String(exam.id)
+                );
+
+
+            const canStart =
+                !attempted &&
+                !isUpcoming;
+
+
+            let statusText;
+
+            if (attempted) {
+
+                statusText =
+                    "Completed";
+
+            } else if (isUpcoming) {
+
+                statusText =
+                    "Upcoming";
+
+            } else {
+
+                statusText =
+                    "Available";
+            }
+
+
+            let availabilityHtml;
+
+
+            if (isUpcoming) {
+
+                availabilityHtml = `
+                    <div class="exam-availability">
+                        <i class="fa-regular fa-calendar"></i>
+                        Starts at
+                        ${exam.scheduledAt
+                            ? formatDateTime(exam.scheduledAt)
+                            : "Scheduled time"
+                        }
+                    </div>
+                `;
+
+            } else {
+
+                availabilityHtml = `
+                    <div class="exam-availability">
+                        <i class="fa-regular fa-calendar-xmark"></i>
+                        Available until
+                        ${exam.availableUntil
+                            ? formatDateTime(exam.availableUntil)
+                            : exam.sessionEndsAt
+                                ? formatDateTime(exam.sessionEndsAt)
+                                : "Not set"
+                        }
+                    </div>
+                `;
+            }
+
+
+            let buttonHtml;
+
+
+            if (attempted) {
+
+                buttonHtml = `
+                    <button
+                        class="start-btn disabled"
+                        disabled
+                    >
+                        Completed
+                    </button>
+                `;
+
+            } else if (isUpcoming) {
+
+                buttonHtml = `
+                    <button
+                        class="start-btn disabled"
+                        disabled
+                    >
+                        Upcoming
+                    </button>
+                `;
+
+            } else {
+
+                buttonHtml = `
+                    <button
+                        class="start-btn"
+                        onclick="startExam('${exam.id}')"
+                    >
+                        Start Exam
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                `;
+            }
+
+
+            return `
+                <div class="exam-card">
+
+                    <div class="exam-top">
+
+                        <div class="subject-icon">
+                            <i class="fa-solid fa-file-circle-check"></i>
+                        </div>
+
+                        <span class="exam-status active-status">
+                            ${statusText}
+                        </span>
+
+                    </div>
+
+
+                    <h3>
+                        ${escapeHtml(exam.title)}
+                    </h3>
+
+
+                    <p class="exam-code">
+                        ${escapeHtml(exam.subject)}
+                        •
+                        ${escapeHtml(exam.code)}
+                    </p>
+
+
+                    <div class="exam-details">
+
+                        <span>
+                            <i class="fa-regular fa-clock"></i>
+                            ${exam.duration} Minutes
+                        </span>
+
+                        <span>
+                            <i class="fa-regular fa-circle-question"></i>
+                            ${exam.questionCount} Questions
+                        </span>
+
+                    </div>
+
+
+                    ${availabilityHtml}
+
+
+                    <div class="exam-footer">
+
+                        <span class="exam-marks">
+                            <i class="fa-solid fa-star"></i>
+                            ${exam.totalMarks} Marks
+                        </span>
+
+                        ${buttonHtml}
+
+                    </div>
+
+                </div>
+            `;
+
+        }).join("");
+}
     grid.innerHTML =
         exams.map(exam => {
 
@@ -424,8 +620,6 @@ function renderAvailableExams() {
             `;
 
         }).join("");
-
-}
 
 
 function renderUpcomingExams() {

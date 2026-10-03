@@ -1,3 +1,4 @@
+
 const examId =
     new URLSearchParams(
         window.location.search
@@ -143,6 +144,8 @@ let teacherVoicePendingCandidates = [];
 let speakingAttemptId = null;
 
 let speakingTargetSocketId = null;
+
+let liveAudioUnlocked = false;
 
 
 
@@ -513,6 +516,16 @@ function renderStudentCard(
                     playsinline
                     muted
                 ></video>
+
+                <div class="student-media-status">
+    <span>
+        📹 Camera: Waiting...
+    </span>
+
+    <span>
+        🎤 Mic: Waiting...
+    </span>
+</div>
 
 
                <div
@@ -1465,6 +1478,59 @@ function stopTeacherVoice() {
 
 
 /* =========================================================
+   UNLOCK LIVE STUDENT AUDIO
+========================================================= */
+
+async function unlockLiveAudio() {
+
+    const audios =
+        document.querySelectorAll(
+            ".monitor-audio"
+        );
+
+    let success = false;
+
+    for (
+        const audio of audios
+    ) {
+
+        try {
+
+            audio.muted = false;
+
+            audio.volume = 1;
+
+            await audio.play();
+
+            success = true;
+
+        } catch (error) {
+
+            console.warn(
+                "Audio still blocked:",
+                error
+            );
+
+        }
+
+    }
+
+    if (success) {
+
+        liveAudioUnlocked = true;
+
+        console.log(
+            "🔊 Live student audio enabled."
+        );
+
+    }
+
+}
+
+
+
+
+/* =========================================================
    ATTACH MEDIA
 ========================================================= */
 
@@ -1580,6 +1646,43 @@ function attachMedia(
 
 }
 
+
+const mediaStatus =
+    card.querySelector(
+        ".student-media-status"
+    );
+
+if (mediaStatus) {
+
+    const videoTrack =
+        stream.getVideoTracks()[0];
+
+    const audioTrack =
+        stream.getAudioTracks()[0];
+
+    mediaStatus.innerHTML = `
+        <span>
+            📹 Camera:
+            ${
+                videoTrack &&
+                videoTrack.readyState === "live"
+                    ? "LIVE"
+                    : "OFF"
+            }
+        </span>
+
+        <span>
+            🎤 Mic:
+            ${
+                audioTrack &&
+                audioTrack.readyState === "live"
+                    ? "LIVE"
+                    : "OFF"
+            }
+        </span>
+    `;
+}
+
     const current =
         students.get(
             attemptId
@@ -1617,6 +1720,23 @@ async function handleOffer(
     attempt
 ) {
 
+    if (
+        !fromSocketId ||
+        !offer ||
+        !attempt
+    ) {
+        console.error(
+            "❌ Invalid WebRTC offer."
+        );
+
+        return;
+    }
+
+
+    /*
+     * Close an old connection
+     * from this student if present.
+     */
     const oldPeer =
         peerConnections.get(
             fromSocketId
@@ -1626,9 +1746,7 @@ async function handleOffer(
     if (oldPeer) {
 
         try {
-
             oldPeer.pc.close();
-
         } catch (error) {}
 
         peerConnections.delete(
@@ -1644,210 +1762,218 @@ async function handleOffer(
         );
 
 
-   peerConnections.set(
-    fromSocketId,
-    {
+    const mediaStream =
+        new MediaStream();
 
-        pc,
 
-        attemptId:
-            attempt?.attemptId,
+    peerConnections.set(
+        fromSocketId,
+        {
+            pc,
+            attemptId:
+                String(
+                    attempt.attemptId
+                ),
+            mediaStream
+        }
+    );
 
-        mediaStream:
-            new MediaStream()
+
+    if (
+        !pendingCandidates.has(
+            fromSocketId
+        )
+    ) {
+
+        pendingCandidates.set(
+            fromSocketId,
+            []
+        );
 
     }
-);
-
-   if (!pendingCandidates.has(fromSocketId)) {
-    pendingCandidates.set(fromSocketId, []);
-}
 
 
+    /*
+     * RECEIVE STUDENT CAMERA + MICROPHONE
+     */
     pc.ontrack =
-    event => {
+        event => {
 
-        console.log(
-            "✅ Student media track received:",
-            event.track.kind,
-            "from:",
-            fromSocketId
-        );
-
-        const peer =
-            peerConnections.get(
-                fromSocketId
+            console.log(
+                "🎥 Teacher received student track:",
+                event.track.kind,
+                "student:",
+                attempt.studentName
             );
 
-        if (!peer) {
-            return;
-        }
 
-        if (
-            !peer.mediaStream
-        ) {
-
-            peer.mediaStream =
-                new MediaStream();
-
-        }
-
-        const alreadyAdded =
-            peer.mediaStream
-                .getTracks()
-                .some(
-                    track =>
-                        track.id ===
-                        event.track.id
+            const peer =
+                peerConnections.get(
+                    fromSocketId
                 );
 
-        if (!alreadyAdded) {
 
-            peer.mediaStream.addTrack(
-                event.track
+            if (!peer) {
+                return;
+            }
+
+
+            if (
+                !peer.mediaStream
+            ) {
+
+                peer.mediaStream =
+                    new MediaStream();
+
+            }
+
+
+            const exists =
+                peer.mediaStream
+                    .getTracks()
+                    .some(
+                        track =>
+                            track.id ===
+                            event.track.id
+                    );
+
+
+            if (!exists) {
+
+                peer.mediaStream.addTrack(
+                    event.track
+                );
+
+            }
+
+
+            /*
+             * Attach both:
+             * video track
+             * audio track
+             */
+            attachMedia(
+                fromSocketId,
+                peer.mediaStream
             );
 
-        }
-
-        attachMedia(
-            fromSocketId,
-            peer.mediaStream
-        );
-
-    };
+        };
 
 
+    /*
+     * Teacher → student ICE
+     */
     pc.onicecandidate =
         event => {
 
             if (
-                event.candidate
+                !event.candidate ||
+                !monitorSocket
+            ) {
+                return;
+            }
+
+
+            monitorSocket.emit(
+                "webrtc:ice-candidate",
+                {
+                    targetSocketId:
+                        fromSocketId,
+
+                    candidate:
+                        event.candidate
+                }
+            );
+
+        };
+
+
+    pc.onconnectionstatechange =
+        () => {
+
+            const state =
+                pc.connectionState;
+
+
+            console.log(
+                "👨‍🏫 Teacher WebRTC:",
+                state,
+                "student:",
+                attempt.studentName
+            );
+
+
+            const card =
+                document.querySelector(
+                    `[data-attempt-id="${attempt.attemptId}"]`
+                );
+
+
+            const offline =
+                card?.querySelector(
+                    ".student-offline"
+                );
+
+
+            if (
+                state === "connected"
             ) {
 
-                monitorSocket.emit(
-                    "webrtc:ice-candidate",
-                    {
+                if (offline) {
+                    offline.style.display =
+                        "none";
+                }
 
-                        targetSocketId:
-                            fromSocketId,
 
-                        candidate:
-                            event.candidate
-
-                    }
+                console.log(
+                    "✅ LIVE CAMERA + MICROPHONE CONNECTED:",
+                    attempt.studentName
                 );
+
+            }
+
+
+            if (
+                state === "failed" ||
+                state === "disconnected" ||
+                state === "closed"
+            ) {
+
+                if (offline) {
+
+                    offline.style.display =
+                        "flex";
+
+                    offline.textContent =
+                        "Camera or microphone connection lost.";
+
+                }
 
             }
 
         };
 
 
-  pc.onconnectionstatechange =
-    () => {
-
-        const state =
-            pc.connectionState;
-
-
-        console.log(
-            "Teacher WebRTC state:",
-            state,
-            "student:",
-            attempt?.studentName,
-            "attempt:",
-            attempt?.attemptId
-        );
-
-
-        const card =
-            document.querySelector(
-                `[data-attempt-id="${attempt?.attemptId}"]`
-            );
-
-
-        const offline =
-            card?.querySelector(
-                ".student-offline"
-            );
-
-
-        if (
-    state === "connected"
-) {
-
-    if (offline) {
-
-        offline.style.display =
-            "none";
-
-    }
-
-    const current =
-        students.get(
-            String(
-                attempt?.attemptId
-            )
-        );
-
-    if (
-        current?.mediaStream
-    ) {
-
-        attachMedia(
-            fromSocketId,
-            current.mediaStream
-        );
-
-    }
-
-    console.log(
-        "✅ Teacher connected to student camera + microphone:",
-        attempt?.studentName
-    );
-
-}
-
-
-        if (
-            state === "failed" ||
-            state === "disconnected" ||
-            state === "closed"
-        ) {
-
-            if (offline) {
-
-                offline.style.display =
-                    "flex";
-
-                offline.textContent =
-    "Camera or microphone connection lost...";
-
-            }
-
-            console.warn(
-                "⚠️ Student media connection:",
-                state,
-                attempt?.studentName
-            );
-
-        }
-
-    };
-
+    /*
+     * Set student's offer.
+     */
     await pc.setRemoteDescription(
         offer
     );
 
 
-    const candidateQueue =
-        pendingCandidates.get(
-            fromSocketId
-        ) || [];
+    /*
+     * Add ICE candidates that
+     * arrived before the offer.
+     */
+    const queued =
+        pendingCandidates
+            .get(fromSocketId) || [];
 
 
     for (
         const candidate
-        of candidateQueue
+        of queued
     ) {
 
         try {
@@ -1859,7 +1985,7 @@ async function handleOffer(
         } catch (error) {
 
             console.warn(
-                "Queued ICE:",
+                "Queued ICE error:",
                 error
             );
 
@@ -1874,6 +2000,9 @@ async function handleOffer(
     );
 
 
+    /*
+     * Send answer back to student.
+     */
     const answer =
         await pc.createAnswer();
 
@@ -1886,17 +2015,20 @@ async function handleOffer(
     monitorSocket.emit(
         "webrtc:answer",
         {
-
             targetSocketId:
                 fromSocketId,
 
             answer
-
         }
     );
 
-}
 
+    console.log(
+        "📤 Teacher sent WebRTC answer:",
+        attempt.studentName
+    );
+
+}
 
 /* =========================================================
    SOCKET
@@ -2593,12 +2725,8 @@ document.addEventListener(
 
     if (!examId) {
 
-        window.location.replace(
-            "/teacher-dashboard.html?section=live-monitoring"
-        );
-
-        return;
-    }
+    return;
+}
 
     if (
         !await authenticate()
@@ -2609,6 +2737,30 @@ document.addEventListener(
     await loadLiveData();
 
     connectMonitorSocket();
+
+                const audioButton =
+                document.getElementById(
+                    "enableLiveAudio"
+                );
+
+            if (audioButton) {
+
+                audioButton.addEventListener(
+                    "click",
+                    async () => {
+
+                        await unlockLiveAudio();
+
+                        audioButton.textContent =
+                            "🔊 Live Audio Enabled";
+
+                        audioButton.disabled =
+                            true;
+
+                    }
+                );
+
+            }
 
             document.getElementById(
                 "refreshMonitor"

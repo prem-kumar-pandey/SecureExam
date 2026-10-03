@@ -164,8 +164,9 @@ function openSection(sectionName) {
     }
 
    if (sectionName === "live-monitoring") {
-    window.location.href = "/live-monitoring.html";
-    return;
+
+    renderTeacherLiveMonitoring();
+
 }
 
     if (sectionName === "results") {
@@ -445,6 +446,113 @@ document.getElementById(
         : "";
 
 
+        // =====================================
+// LOAD TARGET CLASS GROUP
+// =====================================
+
+const targetGroup =
+    exam.targetGroup || {};
+
+const institutionTypeInput =
+    document.getElementById(
+        "examInstitutionType"
+    );
+
+const institutionNameInput =
+    document.getElementById(
+        "examInstitutionName"
+    );
+
+if (institutionTypeInput) {
+
+    institutionTypeInput.value =
+        targetGroup.institutionType || "";
+
+    institutionTypeInput.dispatchEvent(
+        new Event("change", {
+            bubbles: true
+        })
+    );
+}
+
+if (institutionNameInput) {
+
+    institutionNameInput.value =
+        targetGroup.institutionName || "";
+}
+
+if (
+    targetGroup.institutionType ===
+    "college"
+) {
+
+    const semesterInput =
+        document.getElementById(
+            "examSemester"
+        );
+
+    const courseInput =
+        document.getElementById(
+            "examCourse"
+        );
+
+    const sectionInput =
+        document.getElementById(
+            "examCollegeSection"
+        );
+
+    if (semesterInput) {
+
+        semesterInput.value =
+            targetGroup.year || "";
+
+    }
+
+    if (courseInput) {
+
+        courseInput.value =
+            targetGroup.course || "";
+
+    }
+
+    if (sectionInput) {
+
+        sectionInput.value =
+            targetGroup.section || "";
+
+    }
+
+} else if (
+    targetGroup.institutionType ===
+    "school"
+) {
+
+    const schoolClassInput =
+        document.getElementById(
+            "examSchoolClass"
+        );
+
+    const schoolSectionInput =
+        document.getElementById(
+            "examSchoolSection"
+        );
+
+    if (schoolClassInput) {
+
+        schoolClassInput.value =
+            targetGroup.schoolClass || "";
+
+    }
+
+    if (schoolSectionInput) {
+
+        schoolSectionInput.value =
+            targetGroup.section || "";
+
+    }
+}
+
+
 
 
 
@@ -474,6 +582,23 @@ function toDateTimeLocal(value) {
     return new Date(date.getTime() - offset * 60000)
         .toISOString()
         .slice(0, 16);
+}
+
+
+function toUtcIso(value) {
+
+    if (!value) {
+        return null;
+    }
+
+    const date =
+        new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return null;
+    }
+
+    return date.toISOString();
 }
 
 
@@ -732,14 +857,18 @@ else if (
         ).value,
 
     scheduledAt:
+    toUtcIso(
         document.getElementById(
             "examScheduledAt"
-        ).value,
+        ).value
+    ),
 
-    sessionEndsAt:
+sessionEndsAt:
+    toUtcIso(
         document.getElementById(
             "examSessionEndsAt"
-        ).value,
+        ).value
+    ),
 
     targetGroup,
 
@@ -1173,16 +1302,6 @@ function renderTeacherExams() {
                             }
                         </span>
 
-                        ${exam.status === "published" ? `
-    <button
-        class="secondary-action"
-        onclick="openLiveMonitor('${exam.id}')">
-
-        <i class="fa-solid fa-video"></i>
-        Monitor
-
-    </button>
-` : ""}
 
 
                         <span class="
@@ -1242,13 +1361,12 @@ function openLiveMonitor(id) {
 
 }
 
-
 function openLiveMonitoringFromSidebar() {
 
-    window.location.href =
-        "/live-monitoring.html";
+    openSection("live-monitoring");
 
 }
+
 
 function renderTeacherLiveMonitoring() {
 
@@ -1291,6 +1409,19 @@ function renderTeacherLiveMonitoring() {
     container.innerHTML =
         teacherExams
             .map(exam => {
+
+
+                 const targetGroup =
+                exam.targetGroup || {};
+
+            const semester =
+                targetGroup.year || "-";
+
+            const course =
+                targetGroup.course || "-";
+
+            const section =
+                targetGroup.section || "-";
 
                 const startTime =
                     exam.scheduledAt
@@ -1424,6 +1555,25 @@ function renderTeacherLiveMonitoring() {
                                 ${exam.duration || 0}
                                 Minutes
                             </p>
+
+
+                            <div class="exam-target-group">
+    <strong>Semester:</strong>
+    ${escapeHtml(semester)}
+
+    &nbsp; | &nbsp;
+
+    <strong>Course:</strong>
+    ${escapeHtml(course)}
+
+    &nbsp; | &nbsp;
+
+    <strong>Section:</strong>
+    ${escapeHtml(section)}
+</div>
+
+
+                            
 
 
                             <small>

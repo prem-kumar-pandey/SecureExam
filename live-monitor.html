@@ -236,9 +236,51 @@
 
 <main class="monitor-page">
 
+    <section id="examSelectorView">
+
+    <div class="monitor-header">
+
+        <div class="monitor-title">
+
+            <h1>
+                Live Monitoring
+            </h1>
+
+            <p>
+                Select an exam to monitor students in real time.
+            </p>
+
+        </div>
+
+        <button
+            type="button"
+            class="secondary-action"
+            onclick="window.location.href='/teacher-dashboard.html'"
+        >
+            <i class="fa-solid fa-arrow-left"></i>
+            Teacher Dashboard
+        </button>
+
+    </div>
+
+    <section
+        id="liveExamGrid"
+        class="students-grid"
+    >
+
+        <div class="empty-monitor">
+            Loading exams...
+        </div>
+
+    </section>
+
+</section>
+
     <!-- =========================================
          HEADER
     ========================================== -->
+
+   <section id="monitorView" hidden>
 
     <header class="monitor-header">
 
@@ -273,6 +315,13 @@
                 <i class="fa-solid fa-rotate"></i>
                 Refresh
             </button>
+
+            <button
+    id="enableLiveAudio"
+    type="button"
+>
+    🔊 Enable Live Audio
+</button>
 
             <button
                 type="button"
@@ -421,6 +470,244 @@
     </section>
 
 </main>
+
+<script>
+
+async function loadExamSelector() {
+
+    const grid =
+        document.getElementById("liveExamGrid");
+
+    if (!grid) {
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/teacher/exams",
+                {
+                    credentials: "include"
+                }
+            );
+
+        if (!response.ok) {
+            throw new Error("Could not load exams.");
+        }
+
+        const data =
+            await response.json();
+
+        const exams =
+            data.exams || [];
+
+        if (!exams.length) {
+
+            grid.innerHTML = `
+                <div class="empty-monitor">
+                    <i class="fa-solid fa-video-slash"></i>
+
+                    <h2>
+                        No exams available
+                    </h2>
+
+                    <p>
+                        Create an exam first.
+                    </p>
+                </div>
+            `;
+
+            return;
+        }
+
+        grid.innerHTML =
+            exams.map(exam => {
+
+                const start =
+                    exam.scheduledAt
+                        ? new Date(exam.scheduledAt)
+                        : null;
+
+                const end =
+                    exam.sessionEndsAt
+                        ? new Date(exam.sessionEndsAt)
+                        : null;
+
+                const now =
+                    Date.now();
+
+                let state =
+                    "UPCOMING";
+
+                let canMonitor =
+                    false;
+
+                if (
+                    exam.status === "published" &&
+                    start &&
+                    end &&
+                    now >= start.getTime() &&
+                    now <= end.getTime()
+                ) {
+
+                    state =
+                        "LIVE NOW";
+
+                    canMonitor =
+                        true;
+
+                } else if (
+                    end &&
+                    now > end.getTime()
+                ) {
+
+                    state =
+                        "COMPLETED";
+
+                } else if (
+                    exam.status !== "published"
+                ) {
+
+                    state =
+                        "DRAFT";
+
+                }
+
+                return `
+
+                    <article class="monitor-panel">
+
+                        <div style="margin-bottom:15px;">
+
+                            <strong>
+                                ${escapeHtml(
+                                    exam.title || "Untitled Exam"
+                                )}
+                            </strong>
+
+                            <p style="margin:6px 0;opacity:.7;">
+                                ${escapeHtml(
+                                    exam.subject || ""
+                                )}
+                            </p>
+
+                        </div>
+
+                        <p>
+                            <strong>Status:</strong>
+                            ${state}
+                        </p>
+
+                        <p>
+                            <strong>Questions:</strong>
+                            ${exam.questionCount || 0}
+                        </p>
+
+                        <p>
+                            <strong>Duration:</strong>
+                            ${exam.duration || 0} minutes
+                        </p>
+
+                        <button
+                            type="button"
+                            class="secondary-action"
+                            ${canMonitor ? "" : "disabled"}
+                            onclick="openExamMonitor('${exam.id}')"
+                        >
+
+                            <i class="fa-solid fa-video"></i>
+
+                            ${
+                                canMonitor
+                                    ? "Monitor Exam"
+                                    : "Monitoring Unavailable"
+                            }
+
+                        </button>
+
+                    </article>
+
+                `;
+
+            }).join("");
+
+    } catch (error) {
+
+        console.error(
+            "Exam selector error:",
+            error
+        );
+
+        grid.innerHTML = `
+            <div class="empty-monitor">
+                ${escapeHtml(error.message)}
+            </div>
+        `;
+
+    }
+
+}
+
+
+function openExamMonitor(examId) {
+
+    window.location.href =
+        `/live-monitor.html?examId=${encodeURIComponent(examId)}`;
+
+}
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        const examSelector =
+            document.getElementById(
+                "examSelectorView"
+            );
+
+        const monitorView =
+            document.getElementById(
+                "monitorView"
+            );
+
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        const currentExamId =
+            params.get("examId");
+
+        if (currentExamId) {
+
+            if (examSelector) {
+                examSelector.hidden = true;
+            }
+
+            if (monitorView) {
+                monitorView.hidden = false;
+            }
+
+        } else {
+
+            if (examSelector) {
+                examSelector.hidden = false;
+            }
+
+            if (monitorView) {
+                monitorView.hidden = true;
+            }
+
+            loadExamSelector();
+
+        }
+
+    }
+);
+
+</script>
 
 
 <!-- Socket.IO client is required by live-monitor.js -->
